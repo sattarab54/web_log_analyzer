@@ -1,0 +1,62 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Analysis Results</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+    <h1>Analysis Results</h1>
+
+    <p><strong>Source:</strong> {{ source_name }}</p>
+    <p><strong>Keyword:</strong> {{ keyword }}</p>
+    <p><strong>Case-sensitive search:</strong>
+    {% if case_sensitive %}
+        Yes
+    {% else %}
+        No
+    {% endif %}
+    </p>
+    <p><strong>Selected levels:</strong> {{ selected_levels | join(", ") }}</p>
+    <p><strong>Total matching lines:</strong> {{ total }}</p>
+
+    <h2>Summary</h2>
+    <ul>
+        <li>ERROR: {{ summary["ERROR"] }}</li>
+        <li>WARNING: {{ summary["WARNING"] }}</li>
+        <li>INFO: {{ summary["INFO"] }}</LI>
+        <li>DEBUG: {{ summary["DEBUG"] }}</li>
+    <ul>
+
+    
+
+    <h2>Matching Lines</h2>
+
+    {% if results %}
+        <ul>
+        {% for line in results %}
+            <li>
+                {% if line.startswith("ERROR") %}
+                    <pre class="error-line">{{line}}</pre>
+                {% elif line.startswith("WARNING") %}
+                    <pre class="warning-line">{{line}}</pre>
+                {% elif line.startswith("INFO") %}
+                    <pre class="info-line">{{line}}</pre>
+                {% elif line.startswith("DEBUG") %}
+                    <pre class="debug-line">{{line}}</pre>
+                {% else %}
+                    <pre>{{line}}</pre>
+                {% endif %}
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No matching lines found.</p>
+    {% endif %}
+
+    <br>
+    <a href="/">Analyze another log</a>
+    </div>
+</body>
+</html>

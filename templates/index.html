@@ -1,0 +1,57 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Web Log Analyzer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+    <h1>Web Log Analyzer</h1>
+    {% if error_message %}
+        <p style="color: red;"><strong>{{ error_message }}</strong></p>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+        <label>Paste log text:</label><br>
+        <textarea name="log_text" rows="12" cols="80"></textarea><br><br>
+
+        <label>Or upload a log file:</label><br>
+        <input type="file" name="log_file"><br><br>
+
+        <label>Keyword filter:</label><br>
+        <input type="text" name="keyword" placeholder="failed"><br>
+
+        <label class="checkbox-label">
+            <input type="checkbox" name="case_sensitive">
+            Case-sensitive search
+        </label>
+        <br><br>
+        
+        <label>Log levels:</label><br>
+
+        <label class="checkbox-label">
+            <input type="checkbox" name="levels" value="ERROR">
+            ERROR
+        </label><br>
+
+        <label class="checkbox-label">
+            <input type="checkbox" name="levels" value="WARNING">
+            WARNING
+        </label><br>
+
+        <label class="checkbox-label">
+            <input type="checkbox" name="levels" value="INFO">
+            INFO
+        </label><br>
+
+        <label class="checkbox-label">
+            <input type="checkbox" name="levels" value="DEBUG">
+            DEBUG
+        </label><br>
+        
+        <button type="submit">Analyze</button>
+    </form>
+    </div>
+</body>
+</html>
