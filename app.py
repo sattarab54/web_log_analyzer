@@ -1,8 +1,24 @@
 
 from flask import Flask, render_template, request
+from markupsafe import Markup
+import re
 
 app = Flask(__name__)
 
+def highlight_keyword(line, keyword, case_sensitive=False):
+    if not keyword:
+        return line
+
+    flags = 0 if case_sensitive else re.IGNORECASE
+
+    pattern = re.compile(re.escape(keyword), flags)
+
+    highlighted = pattern.sub(
+        lambda match: f"<mark>{match.group(0)}</mark>",
+        line
+    )
+
+    return Markup(highlighted)
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -47,7 +63,13 @@ def index():
                     if keyword.lower() in line.lower()
                 ]
         else:
-            results = lines            
+            results = lines
+
+        if keyword:
+            results = [
+                highlight_keyword(line, keyword, case_sensitive)
+                for line in results
+            ]
                               
         # 4. summary from final results
         summary = {
