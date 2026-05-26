@@ -1,9 +1,12 @@
 
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, send_file
 from markupsafe import Markup
+from io import BytesIO
 import re
 
 app = Flask(__name__)
+
+latest_results_text = ""
 
 def highlight_keyword(line, keyword, case_sensitive=False):
     if not keyword:
@@ -83,6 +86,15 @@ def index():
             for level in summary:
                 if line.startswith(level):
                     summary[level] += 1
+
+        global latest_results_text
+
+        plain_results = [
+            str(line).replace("<mark>", "").replace("</mark>", "")
+            for line in results
+        ]
+
+        latest_results_text = "\n".join(plain_results)
         
         return render_template(
             "results.html",
@@ -96,6 +108,21 @@ def index():
         )
 
     return render_template("index.html")
+
+@app.route("/download")
+def download_results():
+    file_data = BytesIO()
+
+    file_data.write(latest_results_text.encode("utf-8"))
+
+    file_data.seek(0)
+
+    return send_file(
+        file_data,
+        as_attachment=True,
+        download_name="analysis_results.txt",
+        mimetype="text/plain"
+    )
 
 
 if __name__ == "__main__":
