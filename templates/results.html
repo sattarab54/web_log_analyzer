@@ -11,6 +11,8 @@
 
     <p><strong>Source:</strong> {{ source_name }}</p>
     <p><strong>Keyword:</strong> {{ keyword }}</p>
+    <p><strong>Start datetime:</strong> {{ start_datetime_text or "Not set" }}</p>
+    <p><strong>End datetime:</strong> {{ end_datetime_text or "Not set" }}</p>
     <p><strong>Case-sensitive search:</strong>
     {% if case_sensitive %}
         Yes

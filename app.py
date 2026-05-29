@@ -2,11 +2,19 @@
 from flask import Flask, render_template, request, send_file
 from markupsafe import Markup
 from io import BytesIO
+from datetime import datetime
 import re
 
 app = Flask(__name__)
 
 latest_results_text = ""
+
+def parse_log_datetime(line):
+    try:
+        text = line[:19]
+        return datetime.strptime(text, "%Y-%m-%d %H:%M:%S")
+    except ValueError:
+        return None 
 
 def highlight_keyword(line, keyword, case_sensitive=False):
     if not keyword:
@@ -32,6 +40,8 @@ def index():
         keyword = request.form.get("keyword", "")
         selected_levels = request.form.getlist("levels")
         case_sensitive = "case_sensitive" in request.form
+        start_datetime_text = request.form.get("start_datetime", "")
+        end_datetime_text = request.form.get("end_datetime", "")
 
         # 1. split lines
         if uploaded_file and uploaded_file.filename:
@@ -45,12 +55,53 @@ def index():
             )
 
         lines = log_text.splitlines()
+        
+
+        start_datetime = None
+        end_datetime = None
+
+        if start_datetime_text:
+            try:
+                start_datetime = datetime.strptime(start_datetime_text, "%Y-%m-%d %H:%M:%S")
+            except ValueError:
+                return render_template(
+                    "index.html",
+                    error_message="Start datetime must be in format YYYY-MM-DD HH:MM:SS.",
+                )
+
+        if end_datetime_text:
+            try:
+                end_datetime = datetime.strptime(end_datetime_text, "%Y-%m-%d %H:%M:%S")
+            except ValueError:
+                return render_template(
+                    "index.html",
+                    error_message="End datetime must be in format YYYY-MM-DD HH:MM:SS.",
+                )
+
+        if start_datetime or end_datetime:
+            filtered_lines = []
+
+            for line in lines:
+                line_datetime = parse_log_datetime(line)
+
+                if line_datetime is None:
+                    continue
+
+                if start_datetime and line_datetime < start_datetime:
+                    continue
+
+                if end_datetime and line_datetime > end_datetime:
+                    continue
+
+                filtered_lines.append(line)
+
+            lines = filtered_lines
 
         # 2. selected level filter
         if selected_levels:
             lines = [
                 line for line in lines
-                if any(line.startswith(level) for level in selected_levels)
+                if any(level in line for level in selected_levels)
             ]
 
         # 3. keyword filter
@@ -84,7 +135,7 @@ def index():
 
         for line in results:
             for level in summary:
-                if line.startswith(level):
+                if level in line:
                     summary[level] += 1
 
         global latest_results_text
@@ -105,6 +156,8 @@ def index():
             summary=summary,
             case_sensitive=case_sensitive,
             source_name=source_name,
+            start_datetime_text=start_datetime_text,
+            end_datetime_text=end_datetime_text,
         )
 
     return render_template("index.html")

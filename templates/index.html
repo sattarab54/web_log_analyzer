@@ -20,7 +20,7 @@
         <input type="file" name="log_file"><br><br>
 
         <label>Keyword filter:</label><br>
-        <input type="text" name="keyword" placeholder="failed"><br>
+        <input type="text" name="keyword" placeholder="failed" autocomplete="new_password><br>
 
         <label class="checkbox-label">
             <input type="checkbox" name="case_sensitive">
@@ -49,9 +49,31 @@
             <input type="checkbox" name="levels" value="DEBUG">
             DEBUG
         </label><br>
+
+        <label>Start datetime:</label><br>
+        <input type="text" id="start_datetime" name="start_datetime" placeholder="2026-5-26 10:00:00" autocomplete="new_passward"><br><br>
+
+        <label>End datetime:</label><br>
+        <input type="text" id="end_datetime" name="end_datetime" placeholder="2026-5-26 12:00:00" autocomplete="new_password"><br><br>
+
         
         <button type="submit">Analyze</button>
+        <button type="button" onclick="clearForm()">Reset Filters</button>
     </form>
     </div>
+<script>
+function clearForm() {
+    document.querySelector("form").reset();
+    
+    document.getElementById("keyword").value = "";
+    document.getElementById("start_datetime").value = "";
+    document.getElementById("end_datetime").value = "";
+    document.querySelector("[name='log_file']").value = "";
+
+    document.querySelectorAll("input[type='checkbox']").forEach(function(box) {
+        box.checked = false;
+    });
+}
+</script>
 </body>
 </html>
