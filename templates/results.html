@@ -57,8 +57,37 @@
         <p>No matching lines found.</p>
     {% endif %}
 
+    <h2>Analysis History</h2>
+
+    {% if history %}
+    <table border="1" cellpadding="6">
+        <tr>
+            <th>Keyword</th>
+            <th>Levels</th>
+            <th>Matches</th>
+            <th>Searched At</th>
+        </tr>
+
+        {% for item in history %}
+        <tr>
+            <td>{{ item.keyword or "Not set" }}</td>
+            <td>{{ item.levels or "All/None" }}</td>
+            <td>{{ item.matches }}</td>
+            <td>{{ item.searched_at }}</td>
+        </tr>
+        {% endfor %}
+        <br>
+        <form actions="/clear-history" method="POST">
+            <button type="submit">Clear History</button>
+        </form>
+    </table>
+    {% else %}
+    <p>No history yet.</p>
+    {% endif %}
+    
     <br><br>
     <a href="/download">Download Results</a>
+    <a href="/download-csv">Download CSV</a>
     <a href="/">Analyze another log</a>
     </div>
 </body>

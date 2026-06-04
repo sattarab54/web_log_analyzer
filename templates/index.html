@@ -31,32 +31,31 @@
         <label>Log levels:</label><br>
 
         <label class="checkbox-label">
-            <input type="checkbox" name="levels" value="ERROR">
+            <input type="checkbox" id="level_error" name="levels" value="ERROR" checked>
             ERROR
         </label><br>
 
         <label class="checkbox-label">
-            <input type="checkbox" name="levels" value="WARNING">
+            <input type="checkbox" id="level_warning" name="levels" value="WARNING" checked>
             WARNING
         </label><br>
 
         <label class="checkbox-label">
-            <input type="checkbox" name="levels" value="INFO">
+            <input type="checkbox" id="level_info" name="levels" value="INFO" checked>
             INFO
         </label><br>
 
         <label class="checkbox-label">
-            <input type="checkbox" name="levels" value="DEBUG">
+            <input type="checkbox" id="level_debug" name="levels" value="DEBUG" checked>
             DEBUG
         </label><br>
-
+        
         <label>Start datetime:</label><br>
         <input type="text" id="start_datetime" name="start_datetime" placeholder="2026-5-26 10:00:00" autocomplete="new_passward"><br><br>
 
         <label>End datetime:</label><br>
         <input type="text" id="end_datetime" name="end_datetime" placeholder="2026-5-26 12:00:00" autocomplete="new_password"><br><br>
-
-        
+                
         <button type="submit">Analyze</button>
         <button type="button" onclick="clearForm()">Reset Filters</button>
     </form>
@@ -64,16 +63,25 @@
 <script>
 function clearForm() {
     document.querySelector("form").reset();
-    
-    document.getElementById("keyword").value = "";
-    document.getElementById("start_datetime").value = "";
-    document.getElementById("end_datetime").value = "";
-    document.querySelector("[name='log_file']").value = "";
 
+    
+    document.querySelector("[name='log_text']").value = "";
+    document.querySelector("[name='keyword']").value = "";
+    document.querySelector("[name='start_datetime']").value = "";
+    document.querySelector("[name='end_datetime']").value = "";
+    document.querySelector("[name='log_file']").value = "";
+    
     document.querySelectorAll("input[type='checkbox']").forEach(function(box) {
         box.checked = false;
     });
 }
+
 </script>
 </body>
 </html>
+
+
+
+
+
+
