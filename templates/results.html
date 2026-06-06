@@ -68,7 +68,7 @@
             <th>Searched At</th>
         </tr>
 
-        {% for item in history %}
+        {% for item in history|reverse%}
         <tr>
             <td>{{ item.keyword or "Not set" }}</td>
             <td>{{ item.levels or "All/None" }}</td>
@@ -88,7 +88,17 @@
     <br><br>
     <a href="/download">Download Results</a>
     <a href="/download-csv">Download CSV</a>
+    <a href="/download-history">Download History</a>
     <a href="/">Analyze another log</a>
     </div>
 </body>
 </html>
+
+
+
+
+
+
+
+
+

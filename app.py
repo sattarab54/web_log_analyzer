@@ -1,5 +1,6 @@
 
 from flask import Flask, render_template, request, send_file, redirect
+from utils import load_history, save_history
 from markupsafe import Markup
 from io import BytesIO
 from datetime import datetime
@@ -13,18 +14,6 @@ latest_results_text = ""
 latest_results_rows = []
 
 HISTORY_FILE = "history.json"
-
-def load_history():
-    try:
-        with open(HISTORY_FILE, "r", encoding="utf-8") as file:
-            return json.load(file)
-    except FileNotFoundError:
-        return []
-
-def save_history():
-    with open(HISTORY_FILE, "w", encoding="utf-8") as file:
-        json.dump(history, file, indent=2)
-
 history = load_history()
 
 def parse_log_datetime(line):
@@ -181,16 +170,17 @@ def index():
 
             latest_results_rows.append([timestamp, level, message])
 
-        history.append({
-            "keyword": keyword,
-            "levels": ", ".join(selected_levels),       
-            "matches": len(results),
-            "searched_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        })
+        if len(results) > 0:
+            history.append({
+                "keyword": keyword,
+                "levels": ", ".join(selected_levels),       
+                "matches": len(results),
+                "searched_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            })
 
-        if len(history) > 5:
-            history.pop(0)
-        save_history()
+            if len(history) > 5:
+                history.pop(0)
+            save_history(history)
 
         return render_template(
             "results.html",
@@ -247,12 +237,21 @@ def clear_hisrory():
     global history
 
     history.clear()
-    save_history()
+    save_history(history)
+
+@app.route("/download-history")
+def download_history():
+    return send_file(
+        "history.json",
+        as_attachment=True,
+        download_name="history.json"
+    )
 
     return redirect("/")
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
