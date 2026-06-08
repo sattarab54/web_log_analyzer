@@ -57,27 +57,50 @@
         <p>No matching lines found.</p>
     {% endif %}
 
+    <h2>History Stats</h2>
+    <ul>
+        <li>Total saved searches: {{ total_searches }}</li>
+        <li>Successful searches: {{ successful_searches }}</li>
+        <li>Most searched keyword: {{ most_keyword }}</li>
+    </ul>
+
+    <form action="/filter-history" method="GET">
+        <input type="text"
+               name="history_search"
+               placeholder="Search history"
+               value="{{ history_search }}">
+        <button type="submit">Filter</button>
+    </form>
+
     <h2>Analysis History</h2>
 
     {% if history %}
     <table border="1" cellpadding="6">
         <tr>
+            <th>#</th>
             <th>Keyword</th>
             <th>Levels</th>
             <th>Matches</th>
             <th>Searched At</th>
+            <th>Action</th>
         </tr>
 
-        {% for item in history|reverse%}
+        {% for item in history | reverse %}
         <tr>
+            <td>{{ loop.index}}</td>
             <td>{{ item.keyword or "Not set" }}</td>
             <td>{{ item.levels or "All/None" }}</td>
             <td>{{ item.matches }}</td>
             <td>{{ item.searched_at }}</td>
+            <td>
+                <form action="delete-history/{{ loop.index0 }}" method="POST">
+                    <button type="submit">Delete</button>
+                </foem>
+            </td>
         </tr>
         {% endfor %}
         <br>
-        <form actions="/clear-history" method="POST">
+        <form action="/clear-history" method="POST">
             <button type="submit">Clear History</button>
         </form>
     </table>
@@ -89,6 +112,7 @@
     <a href="/download">Download Results</a>
     <a href="/download-csv">Download CSV</a>
     <a href="/download-history">Download History</a>
+    <a href="/download-filtered-history">Download filtered History</a>
     <a href="/">Analyze another log</a>
     </div>
 </body>

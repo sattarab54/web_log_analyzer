@@ -15,6 +15,7 @@ latest_results_rows = []
 
 HISTORY_FILE = "history.json"
 history = load_history()
+latestfiltered_history = []
 
 def parse_log_datetime(line):
     try:
@@ -180,8 +181,39 @@ def index():
 
             if len(history) > 5:
                 history.pop(0)
+
             save_history(history)
 
+            total_searches = len(history)
+
+            history_search = request.args.get("history_search", "")
+
+            display_history = history
+
+            if history_search:
+                display_history = [
+                    item for item in history
+                    if history_search.lower() in item["keyword"].lower()
+                ]
+
+            successful_searches = sum(
+                1 for item in history if item["matches"] > 0
+            )
+
+            most_keyword = "N/A"
+
+            if history:
+                keyword_counts = {}
+
+                for item in history:
+                    key = item["keyword"]
+                    keyword_counts[key] = keyword_counts.get(key, 0) + 1
+
+                most_keyword = max(
+                    keyword_counts,
+                    key=keyword_counts.get
+                )
+                                        
         return render_template(
             "results.html",
             keyword=keyword,
@@ -193,10 +225,61 @@ def index():
             source_name=source_name,
             start_datetime_text=start_datetime_text,
             end_datetime_text=end_datetime_text,
-            history=history,
+            history=display_history,
+            history_search=history_search,
+            total_searches=total_searches,
+            successful_searches=successful_searches,
+            most_keyword=most_keyword,
         )
 
-    return render_template("index.html") 
+    return render_template("index.html")
+
+@app.route("/delete-history/<int:index>", methods=["POST"])
+def delete_history(index):
+
+    reversed_history = history[::-1]
+
+    if 0 <= index < len(reversed_history):
+
+        item_to_remove = reversed_history[index]
+
+        history.remove(item_to_remove)
+
+        save_history(history)
+
+    return redirect("/")
+
+@app.route("/filter-history")
+def filter_history():
+    global latest_filtered_history
+    history_search = request.args.get("history_search", "")
+
+    display_history = history
+
+    if history_search:
+        display_history = [
+            item for item in history
+            if history_search.lower() in item["keyword"].lower()
+        ]
+    latest_filtered_history = display_history
+
+    return render_template(
+        "results.html",
+        keyword="",
+        results=[],
+        total=0,
+        selected_levels=[],
+        summary={"ERROR": 0, "WARNING": 0, "INFO": 0, "DEBUG": 0},
+        case_sensitive=False,
+        source_name="History filter",
+        start_datetime_text="",
+        end_datetime_text="",
+        history=display_history,
+        history_search=history_search,
+        total_searches=len(history),
+        successful_searches=sum(1 for item in history if item["matches"] > 0),
+        most_keyword="N/A",
+    )
 
 @app.route("/download")
 def download_results():
@@ -239,6 +322,8 @@ def clear_hisrory():
     history.clear()
     save_history(history)
 
+    return redirect("/")
+
 @app.route("/download-history")
 def download_history():
     return send_file(
@@ -247,7 +332,26 @@ def download_history():
         download_name="history.json"
     )
 
-    return redirect("/")
+@app.route("/download-filtered-history")
+def download_filtered_history():
+    file_data = BytesIO()
+
+    text_stream = json.dumps(
+        latest_filtered_history,
+        indent=2
+    )
+
+    file_data.write(text_stream.encode("utf-8"))
+    file_data.seek(0)
+
+    return send_file(
+        file_data,
+        as_attachment=True,
+        download_name="filtered_history.json",
+        mimetype="application/json"
+    )
+
+    
 
 if __name__ == "__main__":
     app.run(debug=True)
