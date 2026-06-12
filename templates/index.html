@@ -31,6 +31,11 @@
         <label>Log levels:</label><br>
 
         <label class="checkbox-label">
+            <input type="checkbox" id="level_critical" name="levels" value="CRITICAL" checked>
+            CRITICAL
+        </label><br>
+
+        <label class="checkbox-label">
             <input type="checkbox" id="level_error" name="levels" value="ERROR" checked>
             ERROR
         </label><br>
@@ -49,9 +54,14 @@
             <input type="checkbox" id="level_debug" name="levels" value="DEBUG" checked>
             DEBUG
         </label><br>
-        
+
+        <label class="checkbox-label">
+            <input type="checkbox" id="level_trace" name="levels" value="TRACE" checked>
+            TRACE
+        </label><br>
+                
         <label>Start datetime:</label><br>
-        <input type="text" id="start_datetime" name="start_datetime" placeholder="2026-5-26 10:00:00" autocomplete="new_passward"><br><br>
+        <input type="text" id="start_datetime" name="start_datetime" placeholder="2026-5-26 10:00:00" autocomplete="new_password"><br><br>
 
         <label>End datetime:</label><br>
         <input type="text" id="end_datetime" name="end_datetime" placeholder="2026-5-26 12:00:00" autocomplete="new_password"><br><br>

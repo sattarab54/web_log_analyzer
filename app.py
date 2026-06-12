@@ -15,7 +15,7 @@ latest_results_rows = []
 
 HISTORY_FILE = "history.json"
 history = load_history()
-latestfiltered_history = []
+latest_filtered_history = []
 
 def parse_log_datetime(line):
     try:
@@ -135,10 +135,12 @@ def index():
                               
         # 4. summary from final results
         summary = {
+            "CRITICAL": 0,
             "ERROR": 0,
             "WARNING": 0,
             "INFO": 0,
             "DEBUG": 0,
+            "TRACE": 0,
         }
 
         for line in results:
@@ -183,6 +185,22 @@ def index():
                 history.pop(0)
 
             save_history(history)
+            
+            level_stats = {
+                "CRITICAL": 0,
+                "ERROR": 0,
+                "WARNING": 0,
+                "INFO": 0,
+                "DEBUG": 0,
+                "TRACE": 0,
+            }
+
+            for item in history:
+                levels_text = item.get("levels", "")
+
+                for level in level_stats:
+                    if level in levels_text:
+                        level_stats[level] += 1
 
             total_searches = len(history)
 
@@ -230,6 +248,7 @@ def index():
             total_searches=total_searches,
             successful_searches=successful_searches,
             most_keyword=most_keyword,
+            level_stats=level_stats,
         )
 
     return render_template("index.html")
@@ -263,6 +282,22 @@ def filter_history():
         ]
     latest_filtered_history = display_history
 
+    level_stats = {
+        "CRITICAL": 0,
+        "ERROR": 0,
+        "WARNING": 0,
+        "INFO": 0,
+        "DEBUG": 0,
+        "TRACE": 0,
+    }
+
+    for item in history:
+        levels_text = item.get("levels", "")
+
+        for level in level_stats:
+            if level in levels_text:
+                level_stats[level] += 1
+
     return render_template(
         "results.html",
         keyword="",
@@ -278,6 +313,7 @@ def filter_history():
         history_search=history_search,
         total_searches=len(history),
         successful_searches=sum(1 for item in history if item["matches"] > 0),
+        level_stats=level_stats,
         most_keyword="N/A",
     )
 
@@ -336,9 +372,24 @@ def download_history():
 def download_filtered_history():
     file_data = BytesIO()
 
+    export_data = {
+        "total_searches": len(latest_filtered_history),
+        "successful_searches": sum(
+            1 for item in latest_filtered_history
+            if item["matches"] > 0
+        ),
+        "most_searched_keyword": (
+            latest_filtered_history[0]["keyword"]
+            if latest_filtered_history
+            else "N/A"
+        ),
+        "history": latest_filtered_history
+    }
+
     text_stream = json.dumps(
-        latest_filtered_history,
+        export_data,
         indent=2
+        
     )
 
     file_data.write(text_stream.encode("utf-8"))
@@ -351,6 +402,66 @@ def download_filtered_history():
         mimetype="application/json"
     )
 
+@app.route("/download-filtered-history-csv")
+def download_filtered_history_csv():
+    file_data = BytesIO()
+
+    rows = ["Keyword,Levels,Matches,Searched At"]
+
+    for item in latest_filtered_history:
+        rows.append(
+            f'"{item.get("keyword", "")}","{item.get("levels", "")}","{item.get("matches", "")}","{item.get("searched_at", "")}"'
+        )
+
+    text_stream = "\n".join(rows)
+
+    file_data.write(text_stream.encode("utf-8"))
+    file_data.seek(0)
+
+    return send_file(
+        file_data,
+        as_attachment=True,
+        download_name="filtered_history.csv",
+        mimetype="text/csv"
+    )
+
+@app.route("/download-stats")
+def download_stats():
+    file_data = BytesIO()
+
+    stats_data = {
+        "total_searches": len(history),
+        "successful_searches": sum(
+            1 for item in history
+            if item["matches"] > 0
+        ),
+        "most_searched_keyword": "N/A",
+        "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    }
+
+    if history:
+        keyword_counts = {}
+
+        for item in history:
+            key = item["keyword"]
+            keyword_counts[key] = keyword_counts.get(key, 0) + 1
+
+        stats_data["most_searched_keyword"] = max(
+            keyword_counts,
+            key=keyword_counts.get
+        )
+
+    text_stream = json.dumps(stats_data, indent=2)
+
+    file_data.write(text_stream.encode("utf-8"))
+    file_data.seek(0)
+
+    return send_file(
+        file_data,
+        as_attachment=True,
+        download_name="history_stats.json",
+        mimetype="application/json"
+    )
     
 
 if __name__ == "__main__":
