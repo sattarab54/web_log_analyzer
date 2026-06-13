@@ -498,6 +498,46 @@ def download_history_excel():
             item.get("searched_at", "")
         ])
 
+    stats_sheet = workbook.create_sheet("Stats")
+
+    stats_sheet.append(["Metric", "Value"])
+
+    stats_sheet.append(["Total searches", len(history)])
+
+    stats_sheet.append([
+        "Successful searches",
+        sum(1 for item in history if item.get("matches", 0) > 0)
+    ])
+    
+    most_keyword = "N/A"
+
+    if history:
+        keyword_counts = {}
+
+        for item in history:
+            key = item.get("keyword", "").strip()
+            if not key:
+                key = "Not set"
+
+            keyword_counts[key] = keyword_counts.get(key, 0) + 1
+
+        most_keyword = max(keyword_counts, key=keyword_counts.get)
+
+    stats_sheet.append(["Most searched keyword", most_keyword])
+
+    stats_sheet.append([])
+
+    stats_sheet.append(["Level", "Count"])
+
+    for level in ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "TRACE"]:
+        count = 0
+
+        for item in history:
+            if level in item.get("levels", ""):
+                count += 1
+
+        stats_sheet.append([level, count])
+
     file_data = BytesIO()
     workbook.save(file_data)
     file_data.seek(0)
