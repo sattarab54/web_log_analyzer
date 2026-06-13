@@ -5,6 +5,7 @@ from markupsafe import Markup
 from io import BytesIO
 from datetime import datetime
 from openpyxl import Workbook
+from openpyxl.utils import get_column_letter
 import re
 import csv
 import json
@@ -537,6 +538,17 @@ def download_history_excel():
                 count += 1
 
         stats_sheet.append([level, count])
+
+    for worksheet in workbook.worksheets:
+        for column_cells in worksheet.columns:
+            max_length = 0
+            column_letter = get_column_letter(column_cells[0].column)
+
+            for cell in column_cells:
+                cell_value = str(cell.value) if cell.value is not None else ""
+                max_length = max(max_length, len(cell_value))
+
+            worksheet.column_dimensions[column_letter].width = max_length + 2
 
     file_data = BytesIO()
     workbook.save(file_data)
