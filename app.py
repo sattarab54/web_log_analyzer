@@ -6,6 +6,7 @@ from io import BytesIO
 from datetime import datetime
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
+from openpyxl.styles import Font
 import re
 import csv
 import json
@@ -490,6 +491,8 @@ def download_history_excel():
     sheet.title = "History"
 
     sheet.append(["Keyword", "Levels", "Matches", "Searched At"])
+    for cell in sheet[1]:
+        cell.font = Font(bold=True)
 
     for item in history:
         sheet.append([
@@ -502,6 +505,8 @@ def download_history_excel():
     stats_sheet = workbook.create_sheet("Stats")
 
     stats_sheet.append(["Metric", "Value"])
+    for cell in stats_sheet[1]:
+        cell.font = Font(bold=True)
 
     stats_sheet.append(["Total searches", len(history)])
 
@@ -529,6 +534,8 @@ def download_history_excel():
     stats_sheet.append([])
 
     stats_sheet.append(["Level", "Count"])
+    for cell in stats_sheet[6]:
+        cell.font = Font(bold=True)
 
     for level in ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "TRACE"]:
         count = 0
