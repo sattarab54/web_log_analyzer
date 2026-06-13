@@ -205,15 +205,32 @@ def index():
             total_searches = len(history)
 
             history_search = request.args.get("history_search", "")
+            history_sort = request.args.get("history_sort", "newest")
 
             display_history = history
 
             if history_search:
                 display_history = [
                     item for item in history
-                    if history_search.lower() in item["keyword"].lower()
+                    if (
+                        history_search.lower() in item["keyword"].lower()
+                        or
+                        history_search.lower() in item["levels"].lower()
+                    )                        
                 ]
 
+            if history_sort == "newest":
+                display_history = list(reversed(display_history))
+
+            elif history_sort == "oldest":
+                display_history = display_history
+
+            elif history_sort == "keyword":
+                display_history = sorted(
+                    display_history,
+                    key=lambda item: item["keyword"].lower()
+                )
+                
             successful_searches = sum(
                 1 for item in history if item["matches"] > 0
             )
@@ -249,6 +266,7 @@ def index():
             successful_searches=successful_searches,
             most_keyword=most_keyword,
             level_stats=level_stats,
+            history_sort=history_sort,
         )
 
     return render_template("index.html")

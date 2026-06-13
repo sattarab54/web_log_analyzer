@@ -81,6 +81,13 @@
                name="history_search"
                placeholder="Search history"
                value="{{ history_search }}">
+
+        <select name="history_sort">
+            <option value="newest" {% if history_sort == "newest" %}selected{% endif %}>Newest first</option>
+            <option value="oldest" {% if history_sort == "oldest" %}selected{% endif %}>Oldest first</option>
+            <option value="keyword" {% if history_sort == "keyword" %}selected{% endif %}>Keyword A-Z </option>
+        </select>
+    
         <button type="submit">Filter</button>
     </form>
 
@@ -107,7 +114,7 @@
             <td>
                 <form action="delete-history/{{ loop.index0 }}" method="POST">
                     <button type="submit">Delete</button>
-                </foem>
+                </form>
             </td>
         </tr>
         {% endfor %}
