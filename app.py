@@ -489,6 +489,7 @@ def download_history_excel():
     workbook = Workbook()
     sheet = workbook.active
     sheet.title = "History"
+    sheet.freeze_panes = "A2"
 
     sheet.append(["Keyword", "Levels", "Matches", "Searched At"])
     for cell in sheet[1]:
@@ -503,6 +504,7 @@ def download_history_excel():
         ])
 
     stats_sheet = workbook.create_sheet("Stats")
+    stats_sheet.freeze_panes = "A2"
 
     stats_sheet.append(["Metric", "Value"])
     for cell in stats_sheet[1]:
