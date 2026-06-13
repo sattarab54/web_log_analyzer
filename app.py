@@ -4,6 +4,7 @@ from utils import load_history, save_history
 from markupsafe import Markup
 from io import BytesIO
 from datetime import datetime
+from openpyxl import Workbook
 import re
 import csv
 import json
@@ -479,6 +480,33 @@ def download_stats():
         as_attachment=True,
         download_name="history_stats.json",
         mimetype="application/json"
+    )
+
+@app.route("/download-history-excel")
+def download_history_excel():
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.title = "History"
+
+    sheet.append(["Keyword", "Levels", "Matches", "Searched At"])
+
+    for item in history:
+        sheet.append([
+            item.get("keyword", ""),
+            item.get("levels", ""),
+            item.get("matches", ""),
+            item.get("searched_at", "")
+        ])
+
+    file_data = BytesIO()
+    workbook.save(file_data)
+    file_data.seek(0)
+
+    return send_file(
+        file_data,
+        as_attachment=True,
+        download_name="history.xlsx",
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
     
 
