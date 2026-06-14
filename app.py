@@ -6,7 +6,7 @@ from io import BytesIO
 from datetime import datetime
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
-from openpyxl.styles import Font
+from openpyxl.styles import Font, PatternFill
 import re
 import csv
 import json
@@ -495,6 +495,13 @@ def download_history_excel():
     for cell in sheet[1]:
         cell.font = Font(bold=True)
 
+    for cell in sheet[1]:
+        cell.fill = PatternFill(
+            fill_type="solid",
+            start_color="D9EAD3",
+            end_color="D9EAD3"
+        )
+
     for item in history:
         sheet.append([
             item.get("keyword", ""),
@@ -509,6 +516,15 @@ def download_history_excel():
     stats_sheet.append(["Metric", "Value"])
     for cell in stats_sheet[1]:
         cell.font = Font(bold=True)
+
+    for cell in stats_sheet[1]:
+        cell.fill = PatternFill(
+            fill_type="solid",
+            start_color="D9EAD3",
+            end_color="D9EAD3",
+        )
+
+    sheet.auto_filter.ref = sheet.dimensions
 
     stats_sheet.append(["Total searches", len(history)])
 
@@ -539,6 +555,13 @@ def download_history_excel():
     for cell in stats_sheet[6]:
         cell.font = Font(bold=True)
 
+    for cell in stats_sheet[6]:
+        cell.fill = PatternFill(
+            fill_type="solid",
+            start_color="D9EAD3",
+            end_color="D9EAD3",
+        )
+    
     for level in ["CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "TRACE"]:
         count = 0
 
@@ -558,6 +581,19 @@ def download_history_excel():
                 max_length = max(max_length, len(cell_value))
 
             worksheet.column_dimensions[column_letter].width = max_length + 2
+
+    stripe_fill = PatternFill(
+        fill_type="solid",
+        start_color="F2F2F2",
+        end_color="F2F2F2",
+    )
+
+    for row in sheet.iter_rows(min_row=2):
+        if row[0].row % 2 ==0:
+            for cell in row:
+                cell.fill = stripe_fill
+
+    stats_sheet.auto_filter.ref = stats_sheet.dimensions
 
     file_data = BytesIO()
     workbook.save(file_data)
