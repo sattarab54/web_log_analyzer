@@ -6,7 +6,7 @@ from io import BytesIO
 from datetime import datetime
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
-from openpyxl.styles import Font, PatternFill
+from openpyxl.styles import Font, PatternFill, Font
 import re
 import csv
 import json
@@ -510,6 +510,22 @@ def download_history_excel():
             item.get("searched_at", "")
         ])
 
+    summary_sheet = workbook.create_sheet("summary")
+    summary_sheet.freeze_panes = "A2"
+
+    
+
+    summary_sheet.append(["Summary Metric", "value"])
+
+    for cell in summary_sheet[1]:
+        cell.font = Font(bold=True)
+        cell.fill = PatternFill(
+            fill_type="solid",
+            start_color="D9EAD3",
+            end_color="D9EAD3"
+        )
+            
+
     stats_sheet = workbook.create_sheet("Stats")
     stats_sheet.freeze_panes = "A2"
 
@@ -524,8 +540,7 @@ def download_history_excel():
             end_color="D9EAD3",
         )
 
-    sheet.auto_filter.ref = sheet.dimensions
-
+    
     stats_sheet.append(["Total searches", len(history)])
 
     stats_sheet.append([
@@ -546,6 +561,17 @@ def download_history_excel():
             keyword_counts[key] = keyword_counts.get(key, 0) + 1
 
         most_keyword = max(keyword_counts, key=keyword_counts.get)
+
+        summary_sheet.append(["Total searches", len(history)])
+        summary_sheet.append([
+            "Successful searches",
+            sum(1 for item in history if item.get("matches", 0) > 0)
+        ])
+
+        summary_sheet.append([
+            "Most searched keywoed",
+            most_keyword
+        ])
 
     stats_sheet.append(["Most searched keyword", most_keyword])
 
@@ -587,14 +613,67 @@ def download_history_excel():
         start_color="F2F2F2",
         end_color="F2F2F2",
     )
+    critical_fill = PatternFill(
+        start_color="FF9999",
+        end_color="FF9999",
+        fill_type="solid",
+    )
+
+    error_fill = PatternFill(
+        start_color="FFCC99",
+        end_color="FFCC99",
+        fill_type="solid",
+    )
+
+    warning_fill = PatternFill(
+        start_color="FFFF99",
+        end_color="FFFF99",
+        fill_type="solid",
+    )
+
+    info_fill = PatternFill(
+        start_color="CCFFFF",
+        end_color="CCFFFF",
+        fill_type="solid",
+    )
+
+    debug_fill = PatternFill(
+        start_color="DDDDDD",
+        end_color="DDDDDD",
+        fill_type="solid",
+    )
+
+    trcae_fill = PatternFill(
+        start_color="CCFFCC",
+        end_color="CCFFCC",
+        fill_type="solid",
+    )
 
     for row in sheet.iter_rows(min_row=2):
         if row[0].row % 2 ==0:
             for cell in row:
                 cell.fill = stripe_fill
 
-    stats_sheet.auto_filter.ref = stats_sheet.dimensions
+    for row in sheet.iter_rows(min_row=2):
+        levels_cell = row[1]
+        levels_text = str(levels_cell.value or "")
 
+        if "CRITICAL" in levels_text:
+            levels_cell.fill = critical_fill
+        elif "ERROR" in levels_text:
+            levels_cell.fill = error_fill
+        elif "WARNING" in levels_text:
+            levels_cell.fill = warning_fill
+        elif "INFO" in levels_text:
+            levels_cell.fill = info_fill
+        elif "DEBUG" in levels_text:
+            levels_cell.fill = debug_fill
+        elif "TRACE" in levels_text:
+            levels_cell.fill = trace_fill
+
+    summary_sheet.auto_filter.ref = summary_sheet.dimensions            
+    stats_sheet.auto_filter.ref = stats_sheet.dimensions
+    
     file_data = BytesIO()
     workbook.save(file_data)
     file_data.seek(0)
