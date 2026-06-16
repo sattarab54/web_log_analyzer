@@ -684,6 +684,80 @@ def download_history_excel():
         download_name="history.xlsx",
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+
+@app.route("/download-filtered-history-excel")
+def download_filtered_history_excel():
+    history_search = request.args.get("history_search", "")
+    history_sort = request.args.get("history_sort", "newest")
+
+    display_history = history
+
+    if history_search:
+        display_history = [
+            item for item in history
+            if (
+                history_search.lower() in item.get("keyword", "").lower()
+                or history_search.lower() in item.get("levels", "").lower()
+            )
+        ]
+
+    if history_sort == "newest":
+        display_history = list(reversed(display_history))
+
+    elif history_sort == "oldest":
+        display_history = display_history
+
+    elif history_sort == "keyword":
+        display_history = sorted(
+            display_history,
+            key=lambda item: item.get("keyword", "").lower()
+        )
+
+    # return "Filtered Excel route ready"
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.title = "Filtered History"
+
+    sheet.append(["Keyword", "Levels", "Matches", "Searched At"])
+
+    for item in display_history:
+        sheet.append([
+            item.get("keyword", ""),
+            item.get("levels", ""),
+            item.get("matches", ""),
+            item.get("searched_at", "")
+        ])
+
+    for cell in sheet[1]:
+        cell.font =Font(bold=True)
+        cell.fill = PatternFill(
+            fill_type="solid",
+            start_color="D9EAD3",
+            end_color="D9EAD3",
+        )
+    sheet.freeze_panes = "A2"
+    sheet.auto_filter.ref = sheet.dimensions
+        
+    for column_cells in sheet.columns:
+        max_length = 0
+        column_letter = get_column_letter(column_cells[0].column)
+
+        for cell in column_cells:
+            cell_value = str(cell.value) if cell.value is not None else ""
+            max_length = max(max_length, len(cell_value))
+
+        sheet.column_dimensions[column_letter].width = max_length + 2
+
+    file_data = BytesIO()
+    workbook.save(file_data)
+    file_data.seek(0)
+
+    return send_file(
+        file_data,
+        as_attachment=True,
+        download_name="filtered_history.xlsx",
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
     
 
 if __name__ == "__main__":
