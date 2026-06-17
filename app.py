@@ -423,29 +423,6 @@ def download_filtered_history():
         mimetype="application/json"
     )
 
-@app.route("/download-filtered-history-csv")
-def download_filtered_history_csv():
-    file_data = BytesIO()
-
-    rows = ["Keyword,Levels,Matches,Searched At"]
-
-    for item in latest_filtered_history:
-        rows.append(
-            f'"{item.get("keyword", "")}","{item.get("levels", "")}","{item.get("matches", "")}","{item.get("searched_at", "")}"'
-        )
-
-    text_stream = "\n".join(rows)
-
-    file_data.write(text_stream.encode("utf-8"))
-    file_data.seek(0)
-
-    return send_file(
-        file_data,
-        as_attachment=True,
-        download_name="filtered_history.csv",
-        mimetype="text/csv"
-    )
-
 @app.route("/download-stats")
 def download_stats():
     file_data = BytesIO()
@@ -758,10 +735,73 @@ def download_filtered_history_excel():
         download_name="filtered_history.xlsx",
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+
+@app.route("/download-filtered-history-csv")
+def download_filtered_history_csv():
+    history_search = request.args.get("history_search", "")
+    history_sort = request.args.get("history_sort", "newest")
+
+    display_history = history
+
+    if history_search:
+        display_history = [
+            item for item in history
+            if (
+                history_search.lower() in item.get("keyword", "").lower()
+                or history_search.lower() in item.get("levels", "").lower()
+            )
+        ]
+    if history_sort == "newest":
+        display_history = list(reversed(display_history))
+
+    elif history_sort == "oldest":
+        display_history = display_history
+
+    elif history_sort == "keyword":
+        display_history = sorted(
+            display_history,
+            key=lambda item: item.get("keyword", "").lower()
+        )
+
+    file_data = BytesIO()
+
+    rows = ["Keyword,Levels,Matches,Searched At"]
+
+    for item in display_history:
+        rows.append(
+            f'"{item.get("keyword", "")}","{item.get("levels", "")}","{item.get("matches", "")}","{item.get("searched_at", "")}"'
+        )
+
+    text_stream = "\n".join(rows)
+
+    file_data.write(text_stream.encode("utf-8"))
+    file_data.seek(0)
+
+    return send_file(
+        file_data,
+        as_attachment=True,
+        download_name="filtered_history.csv",
+        mimetype="text/csv"
+    )
+
+    return "Filtered CSV route ready"
     
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
