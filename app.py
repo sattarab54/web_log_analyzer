@@ -785,8 +785,49 @@ def download_filtered_history_csv():
     )
 
     return "Filtered CSV route ready"
-    
 
+@app.route("/download-filtered-history-json")
+def download_filtered_history_json():
+    history_search = request.args.get("history_search", "")
+    history_sort = request.args.get("history_sort", "newest")
+
+    display_history = history
+
+    if history_search:
+        display_history = [
+            item for item in history
+            if (
+                history_search.lower() in item.get("keyword", "").lower()
+                or history_search.lower() in item.get("levels", "").lower()
+            )
+        ]
+
+    if history_sort == "newest":
+        display_histry = list(reversed(display_history))
+
+    elif history_sort == "oldest":
+        dispaly_history = display_history
+
+    elif history_sort == "keyword":
+        display_history = sorted(
+            display_history,
+            key=lambda item: item.get("keword", "").lower()
+        )
+    file_data = BytesIO()
+
+    text_stream = json.dumps(display_history, indent=2)
+
+    file_data.write(text_stream.encode("utf-8"))
+    file_data.seek(0)
+
+    return send_file(
+        file_data,
+        as_attachment=True,
+        download_name="filtered_histoey.json",
+        mimetype="application/json"
+    )
+        
+    
 if __name__ == "__main__":
     app.run(debug=True)
 
