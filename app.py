@@ -433,6 +433,9 @@ def download_stats():
             1 for item in history
             if item["matches"] > 0
         ),
+        "total_matches_found": sum(
+            item["matches"] for item in history
+        ),
         "most_searched_keyword": "N/A",
         "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     }
@@ -487,6 +490,19 @@ def download_history_excel():
             item.get("searched_at", "")
         ])
 
+    for column in sheet.columns:
+        max_length = 0
+        column_letter = column[0].column_letter
+
+        for cell in column:
+            try:
+                if len(str(cell.value)) > max_length:
+                    max_length = len(str(cell.value))
+            except:
+                pass
+
+        sheet.column_dimensions[column_letter].width = max_length + 2
+
     summary_sheet = workbook.create_sheet("summary")
     summary_sheet.freeze_panes = "A2"
 
@@ -524,7 +540,7 @@ def download_history_excel():
         "Successful searches",
         sum(1 for item in history if item.get("matches", 0) > 0)
     ])
-    
+        
     most_keyword = "N/A"
 
     if history:
@@ -540,13 +556,19 @@ def download_history_excel():
         most_keyword = max(keyword_counts, key=keyword_counts.get)
 
         summary_sheet.append(["Total searches", len(history)])
+
         summary_sheet.append([
             "Successful searches",
             sum(1 for item in history if item.get("matches", 0) > 0)
         ])
 
         summary_sheet.append([
-            "Most searched keywoed",
+            "Total matches found",
+            sum(item.get("matches", 0) for item in history)
+        ])
+
+        summary_sheet.append([
+            "Most searched keyword",
             most_keyword
         ])
 
