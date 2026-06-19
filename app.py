@@ -287,7 +287,7 @@ def delete_history(index):
 
         save_history(history)
 
-    return redirect("/")
+    return redirect("/filter-history")
 
 @app.route("/filter-history")
 def filter_history():
