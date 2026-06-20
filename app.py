@@ -2,7 +2,7 @@
 from flask import Flask, render_template, request, send_file, redirect
 from utils import load_history, save_history
 from markupsafe import Markup
-from io import BytesIO
+from io import BytesIO, StringIO
 from datetime import datetime
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
@@ -462,6 +462,40 @@ def download_stats():
         as_attachment=True,
         download_name="history_stats.json",
         mimetype="application/json"
+    )
+@app.route("/download-stats-csv")
+def download_stats_csv():
+
+    csv_data = StringIO()
+
+    csv_data.write("Metric,Value\n")
+    csv_data.write(f"Total searches,{len(history)}\n")
+
+    successful_searches = sum(
+        1 for item in history
+        if item.get("matches", 0) > 0
+    )
+
+    csv_data.write(f"Successful searches,{successful_searches}\n")
+
+    total_matches = sum(
+        item.get("matches", 0)
+        for item in history
+    )
+
+    csv_data.write(f"Total matches found,{total_matches}\n")
+
+    csv_data.write("Most searched keyword,Not set\n")
+
+    file_data = BytesIO()
+    file_data.write(csv_data.getvalue().encode("utf-8"))
+    file_data.seek(0)
+
+    return send_file(
+        file_data,
+        as_attachment=True,
+        download_name="history_stats.csv",
+        mimetype="text/csv"
     )
 
 @app.route("/download-history-excel")

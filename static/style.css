@@ -89,6 +89,35 @@ pre {
     border-left-color: #6b7280;
 }
 
+.chart-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 6px 0;
+}
+
+.chart-row span {
+    width: 80px;
+    font-weight: bold:
+}
+
+.bar {
+    background-color: steelblue;
+    color: white;
+    padding: 4px;
+    min-width: 30px;
+}
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -76,6 +76,50 @@
         <li>TRACE: {{ level_stats["TRACE"] }}</li>
     </ul>
 
+    <h3>Level Chart</h3>
+
+    <div class="chart-row">
+        <span>CRIRICAL</span>
+        <div class="bar" style="width: {{ level_stats['CRITICAL'] * 30 }}px;">
+            {{ level_stats["CRITICAL"] }}
+        </div>
+    </div>
+
+    <div class="chart-row">
+        <span>ERROR</span>
+        <div class="bar" style="width: {{ level_stats['ERROR'] * 30 }}px;">
+            {{ level_stats["ERROR"] }}
+        </div>
+    </div>
+
+    <div class="chart-row">
+        <span>WARNING</span>
+        <div class="bar" style="width: {{ level_stats['WARNING'] * 30 }}px;">
+            {{ level_stats["WARNING"] }}
+        </div>
+    </div>
+
+    <div class="chart-row">
+        <span>INFO</span>
+        <div class="bar" style="width: {{ level_stats['INFO'] * 30 }}px;">
+            {{ level_stats["INFO"] }}
+        </div>
+    </div>
+
+    <div class="chart-row">
+        <span>DEBUG</span>
+        <div class="bar" style="width: {{ level_stats['DEBUG'] * 30 }}px;">
+            {{ level_stats["DEBUG"] }}
+        </div>
+    </div>
+
+    <div class="chart-row">
+        <span>TRACE</span>
+        <div class="bar" style="width: {{ level_stats['TRACE'] * 30 }}px;">
+            {{ level_stats["TRACE"] }}
+        </div>
+    </div>
+
     <form action="/filter-history" method="GET">
         <input type="text"
                name="history_search"
@@ -137,12 +181,24 @@
     <a href="/download-filtered-history-csv?history_search={{ history_search }}&history_sort={{ history_sort }}">
         Download Filtered History CSV
     </a>
-    <a href="/download-stats">Download Stats</a>
     <a href="/download-history-excel">Download Excel</a>
+    <a href="/download-stats">Download Stats</a>
+    <a href="/download-stats-csv">Download Stats CSV</a>    
     <a href="/">Analyze another log</a>
     </div>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
 
 
 
