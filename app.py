@@ -497,7 +497,7 @@ def download_stats_csv():
         download_name="history_stats.csv",
         mimetype="text/csv"
     )
-
+                                                                    
 @app.route("/download-history-excel")
 def download_history_excel():
     workbook = Workbook()
@@ -839,9 +839,7 @@ def download_filtered_history_csv():
         download_name="filtered_history.csv",
         mimetype="text/csv"
     )
-
-    return "Filtered CSV route ready"
-
+    
 @app.route("/download-filtered-history-json")
 def download_filtered_history_json():
     history_search = request.args.get("history_search", "")
