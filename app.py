@@ -761,6 +761,19 @@ def download_filtered_history_excel():
             item.get("searched_at", "")
         ])
 
+    for column in sheet.columns:
+        max_length = 0
+        column_letter = column[0].column_letter
+
+        for cell in column:
+            cell_value = str(cell.value) if cell.value is not None else ""
+            max_length = max(max_length, len(cell_value))
+
+    sheet.column_dimensions["A"].width = 15
+    sheet.column_dimensions["B"].width = 45
+    sheet.column_dimensions["C"].width = 12
+    sheet.column_dimensions["D"].width = 25
+
     for cell in sheet[1]:
         cell.font =Font(bold=True)
         cell.fill = PatternFill(
@@ -770,17 +783,7 @@ def download_filtered_history_excel():
         )
     sheet.freeze_panes = "A2"
     sheet.auto_filter.ref = sheet.dimensions
-        
-    for column_cells in sheet.columns:
-        max_length = 0
-        column_letter = get_column_letter(column_cells[0].column)
-
-        for cell in column_cells:
-            cell_value = str(cell.value) if cell.value is not None else ""
-            max_length = max(max_length, len(cell_value))
-
-        sheet.column_dimensions[column_letter].width = max_length + 2
-
+            
     file_data = BytesIO()
     workbook.save(file_data)
     file_data.seek(0)
