@@ -59,23 +59,62 @@
         <p>No matching lines found.</p>
     {% endif %}
 
-    <h2>History Stats</h2>
-    <ul>
-        <li>Total saved searches: {{ total_searches }}</li>
-        <li>Successful searches: {{ successful_searches }}</li>
-        <li>Most searched keyword: {{ most_keyword }}</li>
-    </ul>
+    <h2>History Dashboard</h2>
 
-    <h3>Level Statistics</h3>
-    <ul>
-        <li>CRITICAL: {{ level_stats["CRITICAL"] }}</li>
-        <li>ERROR: {{ level_stats["ERROR"] }}</li>
-        <li>WARNING: {{ level_stats["WARNING"] }}</li>
-        <li>INFO: {{ level_stats["INFO"] }}</li>
-        <li>DEBUG: {{ level_stats["DEBUG"] }}</li>
-        <li>TRACE: {{ level_stats["TRACE"] }}</li>
-    </ul>
+    <div class="dashboard-cards">
+        <div class="card">
+            <h3>{{ total_searches }}</h3>
+            <p>Total Searches</p>
+        </div>
 
+        <div class="card">
+            <h3>{{ successful_searches }}</h3>
+            <p>Successful Searches</p>
+        </div>
+
+        <div class="card">
+            <h3>{{ total_matches_found }}</h3>
+            <p>Total Matches</p>
+        </div>
+
+        <div class="card">
+            <h3>{{ most_keyword }}</h3>
+            <p>Top Keyword</p>
+        </div>
+    </div>
+
+    <div class="dashboard-cards">
+        <div class="card">
+            <h3>{{ level_stats["CRITICAL"] }}</h3>
+            <p>Critical</p>
+        </div>
+
+        <div class="card">
+            <h3>{{ level_stats["ERROR"] }}</h3>
+            <p>Error</p>
+        </div>
+
+        <div class="card">
+            <h3>{{ level_stats["WARNING"] }}</h3>
+            <p>Warning</p>
+        </div>
+
+        <div class="card">
+            <h3>{{ level_stats["INFO"] }}</h3>
+            <p>Info</p>
+        </div>
+
+        <div class="card">
+            <h3>{{ level_stats["DEBUG"] }}</h3>
+            <p>Debug</p>
+        </div>
+
+        <div class="card">
+            <h3>{{ level_stats["TRACE"] }}</h3>
+            <p>Trace</p>
+        </div>
+    </div>            
+    
     <h3>Level Chart</h3>
 
     <div class="chart-row">

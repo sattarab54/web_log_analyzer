@@ -238,6 +238,11 @@ def index():
                 1 for item in history if item["matches"] > 0
             )
 
+            total_matches_found = sum(
+                item.get("matches", 0)
+                for item in history
+            )
+
             most_keyword = "N/A"
 
             if history:
@@ -265,8 +270,9 @@ def index():
             end_datetime_text=end_datetime_text,
             history=display_history,
             history_search=history_search,
-            total_searches=total_searches,
+            total_searches=total_searches,            
             successful_searches=successful_searches,
+            total_matches_found=total_matches_found,
             most_keyword=most_keyword,
             level_stats=level_stats,
             history_sort=history_sort,
