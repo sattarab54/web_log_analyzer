@@ -73,16 +73,36 @@
         </div>
 
         <div class="card">
+            <h3>{{ success_rate }}%</h3>
+            <p>Success Rate</p>
+        </div>
+
+        <div class="card">
             <h3>{{ total_matches_found }}</h3>
             <p>Total Matches</p>
+        </div>
+
+        <div class="card">
+            <h3>{{ average_matches }}</h3>
+            <p>Avg Matches</p>
         </div>
 
         <div class="card">
             <h3>{{ most_keyword }}</h3>
             <p>Top Keyword</p>
         </div>
-    </div>
 
+        <div class="card">
+            <h3>{{ latest_keyword }}</h3>
+            <p>Latest Keyword</p>
+        </div>
+
+        <div class="card">
+            <h3>{{ last_search_time }}</h3>
+            <p>Last Search</p>
+        </div>
+    </div>
+    
     <div class="dashboard-cards">
         <div class="card">
             <h3>{{ level_stats["CRITICAL"] }}</h3>

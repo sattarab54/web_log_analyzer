@@ -243,13 +243,43 @@ def index():
                 for item in history
             )
 
+            success_rate = 0
+
+            if total_searches > 0:
+                success_rate = round((successful_searches / total_searches) * 100)
+
+            average_matches = 0
+
+            if total_searches > 0:
+                average_matches = round(
+                    total_matches_found / total_searches,
+                    1
+                )
+
+            last_search_time = "N/A"
+
+            if history:
+                last_search_time = history[-1].get("searched_at") or "N/A"
+
+            latest_keyword = "Not set"
+
+            if history:
+                latest_keyword = history[-1].get("keyword", "").strip()
+
+                if not latest_keyword:
+                    latest_keword = "Not set"
+
             most_keyword = "N/A"
 
             if history:
                 keyword_counts = {}
 
                 for item in history:
-                    key = item["keyword"]
+                    key = item.get("keyword", "").strip()
+
+                    if not key:
+                        continue
+
                     keyword_counts[key] = keyword_counts.get(key, 0) + 1
 
                 most_keyword = max(
@@ -273,7 +303,11 @@ def index():
             total_searches=total_searches,            
             successful_searches=successful_searches,
             total_matches_found=total_matches_found,
+            average_matches=average_matches,
+            success_rate=success_rate,
             most_keyword=most_keyword,
+            latest_keyword=latest_keyword,
+            last_search_time=last_search_time,
             level_stats=level_stats,
             history_sort=history_sort,
         )
