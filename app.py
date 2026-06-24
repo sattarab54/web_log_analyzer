@@ -282,10 +282,13 @@ def index():
 
                     keyword_counts[key] = keyword_counts.get(key, 0) + 1
 
-                most_keyword = max(
-                    keyword_counts,
-                    key=keyword_counts.get
-                )
+                if keyword_counts:
+                    most_keyword = max(
+                        keyword_counts,
+                        key=keyword_counts.get
+                    )
+                else:
+                    most_keyword = "Not set"
                                         
         return render_template(
             "results.html",
@@ -359,6 +362,29 @@ def filter_history():
             if level in levels_text:
                 level_stats[level] += 1
 
+    total_matches_found = sum(
+        item.get("matches", 0)
+        for item in history
+    )
+
+    success_rate = 0
+    if len(history) > 0:
+        success_rate = round((sum(1 for item in history if item["matches"] > 0) / len(history)) * 100)
+
+    average_matches = 0
+    if len(history) > 0:
+        average_matches = round(total_matches_found / len(history), 1)
+
+    latest_keyword = "Not set"
+    if history:
+        latest_keyword = history[-1].get("keyword", "").strip()
+        if not latest_keyword:
+            latest_keyword = "Not set"
+
+    last_searh_time = "N/A"
+    if history:
+        last_search_time = history[-1].get("searched_at") or "N/A"
+
     return render_template(
         "results.html",
         keyword="",
@@ -374,6 +400,11 @@ def filter_history():
         history_search=history_search,
         total_searches=len(history),
         successful_searches=sum(1 for item in history if item["matches"] > 0),
+        total_matches_found=total_matches_found,
+        success_rate=success_rate,
+        average_matches=average_matches,
+        latest_keyword=latest_keyword,
+        last_search_time=last_search_time,
         level_stats=level_stats,
         most_keyword="N/A",
     )

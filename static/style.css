@@ -134,6 +134,31 @@ pre {
     color: #666;
 }
 
+.critical-card {
+    background-color: #ffb3b3;
+}
+
+.error-card {
+    background-color: #ffcc80;
+}
+
+.warning-card {
+    background-color: #fff59d;
+}
+
+.info-card {
+    background-color: #b3e5fc;
+}
+
+.debug-card {
+    background-color: #c8e6c9;
+}
+
+.trace-card {
+    background-color: #e0e0e0;
+}
+    
+
 
 
 
