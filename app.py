@@ -181,7 +181,8 @@ def index():
                 "keyword": keyword,
                 "levels": ", ".join(selected_levels),       
                 "matches": len(results),
-                "searched_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                "searched_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "results": results,
             })
 
             if len(history) > 5:
@@ -289,6 +290,21 @@ def index():
                     )
                 else:
                     most_keyword = "Not set"
+
+        history_search = request.args.get("history_search", "")
+        history_sort = request.args.get("history_sort", "newest")
+
+        display_history = history
+
+        if history_search:
+            display_history = [
+                item for item in history
+                if history_search.lower() in item.get("keyword", "").lower()
+            ]
+
+        if history_sort == "oldest":
+            display_history = list(reversed(display_history))
+             
                                         
         return render_template(
             "results.html",
@@ -317,19 +333,77 @@ def index():
 
     return render_template("index.html")
 
+@app.route("/view-history/<int:index>")
+def view_history(index):
+    if index < 0 or index >= len(history):
+        return redirect("/filter-history")
+
+    item = history[index]
+
+    level_stats = {
+        "CRITICAL": 0,
+        "ERROR": 0,
+        "WARNING": 0,
+        "INFO": 0,
+        "DEBUG": 0,
+        "TRACE": 0,
+    }
+
+    for x in history:
+        levels_text = x.get("levels", "")
+
+        for level in level_stats:
+            if level in levels_text:
+                level_stats[level] += 1
+
+    total_searches = len(history)
+    successful_searches = sum(
+        1 for x in history if x.get("matches", 0) > 0
+    )
+
+    total_matches_found = sum(
+        x.get("matches", 0) for x in history
+    )
+
+    success_rate = 0
+    if total_searches > 0:
+        success_rate = round((successful_searches / total_searches) * 100)
+
+    average_matches = 0
+    if total_searches > 0:
+        average_matches = round(total_matches_found / total_searches, 1)
+        
+    return render_template(
+        "results.html",
+        keyword=item.get("keyword", ""),
+        results=item.get("results", []),
+        total=item.get("matches", 0),
+        selected_levels=item.get("levels", "").split(", "),
+        summary={},
+        case_sensitive=False,
+        source_name="History View",
+        start_datetime_text="",
+        end_datetime_text="",
+        history=history,
+        history_search="",
+        total_searches=total_searches,
+        successful_searches=successful_searches,        
+        total_matches_found=total_matches_found,
+        success_rate=success_rate,
+        average_matches=average_matches,
+        latest_keyword=item.get("keyword", ""),
+        last_search_time=item.get("searched_at", ""),
+        level_stats=level_stats,
+        most_keyword=item.get("keyword", "Not set"),
+        history_sort="newest",
+    )
+
 @app.route("/delete-history/<int:index>", methods=["POST"])
 def delete_history(index):
-
-    reversed_history = history[::-1]
-
-    if 0 <= index < len(reversed_history):
-
-        item_to_remove = reversed_history[index]
-
-        history.remove(item_to_remove)
-
+    if 0 <= index < len(history):
+        history.pop(index)
         save_history(history)
-
+        
     return redirect("/filter-history")
 
 @app.route("/filter-history")
@@ -385,6 +459,24 @@ def filter_history():
     if history:
         last_search_time = history[-1].get("searched_at") or "N/A"
 
+    most_keyword = "Not set"
+
+    keyword_counts = {}
+
+    for item in history:
+        key = item.get("keyword", "").strip()
+
+        if not key:
+            continue
+
+        keyword_counts[key] = keyword_counts.get(key, 0) + 1
+
+    if keyword_counts:
+        most_keyword = max(
+            keyword_counts,
+            key=keyword_counts.get
+        )
+
     return render_template(
         "results.html",
         keyword="",
@@ -406,7 +498,7 @@ def filter_history():
         latest_keyword=latest_keyword,
         last_search_time=last_search_time,
         level_stats=level_stats,
-        most_keyword="N/A",
+        most_keyword=most_keyword,
     )
 
 @app.route("/download")
@@ -422,6 +514,32 @@ def download_results():
         as_attachment=True,
         download_name="analysis_results.txt",
         mimetype="text/plain"
+    )
+
+@app.route("/download-history-csv")
+def download_history_csv():
+    file_data = BytesIO()
+
+    rows = ["Keyword,Levels,Matches,Searched At"]
+
+    for item in history:
+        rows.append(
+            f'"{item.get("keyword", "")}",'
+            f'"{item.get("levels", "")}",'
+            f'"{item.get("matches", "")}",'
+            f'"{item.get("searched_at", "")}",'
+        )
+
+    text_stream = "\n".join(rows)
+
+    file_data.write(text_stream.encode("utf-8"))
+    file_data.seek(0)
+
+    return send_file(
+        file_data,
+        as_attachment=True,
+        download_name="history.csv",
+        mimetype="text/csv"
     )
 
 @app.route("/download-csv")
