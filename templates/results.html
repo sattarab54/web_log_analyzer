@@ -192,10 +192,25 @@
         </select>
     
         <button type="submit">Filter</button>
-    </form>
+    </form>    
+
+    <h2>History Chart</h2>
+
+    {% if chart_labels and chart_values %}
+        {% for value in chart_values %}
+            <div class="chart-row">
+                <span>{{ chart_labels[loop.index0] }}</span>
+                <div class="chart-bar" styles="width: {{ value * 30 }}px;">
+                    {{ value }}
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No chart data yet.</p>
+    {% endif %}
 
     <h2>Analysis History</h2>
-
+    
     {% if history %}
     <table border="1" cellpadding="6">
         <tr>

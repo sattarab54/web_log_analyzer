@@ -175,36 +175,35 @@ def index():
                 message = line
 
             latest_results_rows.append([timestamp, level, message])
+        
+        history.append({
+            "keyword": keyword,
+            "levels": ", ".join(selected_levels),       
+            "matches": len(results),
+            "searched_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "results": results,
+        })
 
-        if len(results) > 0:
-            history.append({
-                "keyword": keyword,
-                "levels": ", ".join(selected_levels),       
-                "matches": len(results),
-                "searched_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                "results": results,
-            })
+        if len(history) > 5:
+            history.pop(0)
 
-            if len(history) > 5:
-                history.pop(0)
-
-            save_history(history)
+        save_history(history)
             
-            level_stats = {
-                "CRITICAL": 0,
-                "ERROR": 0,
-                "WARNING": 0,
-                "INFO": 0,
-                "DEBUG": 0,
-                "TRACE": 0,
-            }
+        level_stats = {
+            "CRITICAL": 0,
+            "ERROR": 0,
+            "WARNING": 0,
+            "INFO": 0,
+            "DEBUG": 0,
+            "TRACE": 0,
+        }
 
-            for item in history:
-                levels_text = item.get("levels", "")
+        for item in history:
+            levels_text = item.get("levels", "")
 
-                for level in level_stats:
-                    if level in levels_text:
-                        level_stats[level] += 1
+            for level in level_stats:
+                if level in levels_text:
+                    level_stats[level] += 1
 
             total_searches = len(history)
 
@@ -217,9 +216,9 @@ def index():
                 display_history = [
                     item for item in history
                     if (
-                        history_search.lower() in item["keyword"].lower()
-                        or
-                        history_search.lower() in item["levels"].lower()
+                        history_search.lower() in item.get("keyword", "").lower()
+                        
+                        or history_search.lower() in item.get("levels", "").lower()
                     )                        
                 ]
 
@@ -232,11 +231,12 @@ def index():
             elif history_sort == "keyword":
                 display_history = sorted(
                     display_history,
-                    key=lambda item: item["keyword"].lower()
+                    key=lambda item: item.get("keyword", "").lower()
                 )
                 
             successful_searches = sum(
-                1 for item in history if item["matches"] > 0
+                1 for item in history
+                if item.get("matches", 0) > 0
             )
 
             total_matches_found = sum(
@@ -252,11 +252,8 @@ def index():
             average_matches = 0
 
             if total_searches > 0:
-                average_matches = round(
-                    total_matches_found / total_searches,
-                    1
-                )
-
+                average_matches = round(total_matches_found / total_searches, 1)                    
+                                    
             last_search_time = "N/A"
 
             if history:
@@ -268,7 +265,7 @@ def index():
                 latest_keyword = history[-1].get("keyword", "").strip()
 
                 if not latest_keyword:
-                    latest_keword = "Not set"
+                    latest_keyword = "Not set"
 
             most_keyword = "N/A"
 
@@ -304,7 +301,19 @@ def index():
 
         if history_sort == "oldest":
             display_history = list(reversed(display_history))
-             
+
+        total_searches = len(history)
+
+        chart_labels = []
+        chart_values = []
+
+        for item in history:
+            label = item.get("keyword", "").strip()
+            if not label:
+                label = "Not set"
+
+            chart_labels.append(label)
+            chart_values.append(item.get("matches", 0))
                                         
         return render_template(
             "results.html",
@@ -329,6 +338,8 @@ def index():
             last_search_time=last_search_time,
             level_stats=level_stats,
             history_sort=history_sort,
+            chart_labels=chart_labels,
+            chart_values=chart_values,
         )
 
     return render_template("index.html")
@@ -372,6 +383,37 @@ def view_history(index):
     average_matches = 0
     if total_searches > 0:
         average_matches = round(total_matches_found / total_searches, 1)
+
+    chart_labels = []
+    chart_values = []
+
+    for x in history:
+        label = x.get("keyword", "").strip()
+
+        if not label:
+            label = "Not set"
+
+        chart_labels.append(label)
+        chart_values.append(x.get("matches", 0))
+
+    most_keyword = "Not set"
+
+    if history:
+        keyword_counts = {}
+
+        for x in history:
+            key = x.get("keyword", "").strip()
+
+            if not key:
+                continue
+
+            keyword_counts[key] = keyword_counts.get(key, 0) + 1
+
+        if keyword_counts:
+            most_keyword = max(
+                keyword_counts,
+                key=keyword_counts.get
+            )
         
     return render_template(
         "results.html",
@@ -394,8 +436,10 @@ def view_history(index):
         latest_keyword=item.get("keyword", ""),
         last_search_time=item.get("searched_at", ""),
         level_stats=level_stats,
-        most_keyword=item.get("keyword", "Not set"),
+        most_keyword=most_keyword,
         history_sort="newest",
+        chart_labels=chart_labels,
+        chart_values=chart_values,
     )
 
 @app.route("/delete-history/<int:index>", methods=["POST"])

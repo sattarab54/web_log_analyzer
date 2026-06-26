@@ -157,6 +157,24 @@ pre {
 .trace-card {
     background-color: #e0e0e0;
 }
+
+.chart-row {
+    display: flex;
+    align-item: center;
+    gap: 10px;
+    margin: 6px 0;
+}
+
+.chart-row span {
+    eidth: 80px;
+}
+
+.chart-bar {
+    background-color: steelblue;
+    color: white;
+    padding: 4px;
+    min-width: 25px;
+}
     
 
 
