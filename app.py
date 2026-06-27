@@ -1140,10 +1140,104 @@ def download_filtered_history_json():
         download_name="filtered_history.json",
         mimetype="application/json"
     )
+
+@app.route("/download-stats-json")
+def download_stats_json():
+    print(history)
+
+    top_kayword = "Not set"
+    keyword_counts = {}
+
+    for item in history:
+        key = item.get("keyword", "").strip()
+
+        if not key:
+            key = "Not set"
+
+        keyword_counts[key] = keyword_counts.get(key, 0) + 1
+
+    if keyword_counts:
+        top_keyword = max(
+            keyword_counts,
+            key=keyword_counts.get
+        )
+
+    latest_keyword = "Not set"
+    last_search = "Not set"
+
+    if history:
+        latest = history[-1]
+        latest_keyword = latest.get("keyword", "").strip()
+
+        if not latest_keyword:
+            latest_keyword = "Not set"
+
+        last_search =latest.get("searched_at", "Not set")
+
+    level_stats = {
+        "CRITICAL": 0,
+        "ERROR": 0,
+        "WARNING": 0,
+        "INFO": 0,
+        "DEBUG": 0,
+        "TRACE": 0,
+    }
+    for item in history:
+        levels_text = item.get("levels", "")
+
+        for level in level_stats:
+            if level in levels_text:
+                level_stats[level] +=1
+        
+    stats = {
+        "total_searches": len(history),
+        "successful_searches": sum(
+            1 for item in history if item.get("matches", 0) > 0
+        ),
+        "success_rate": round(
+            (sum(1 for item in history if item.get("matches", 0) > 0) / len(history)) * 100
+        ) if history else 0,
+        "total_matches": sum(
+            item.get("matches", 0) for item in history
+        ),
+        "average_matches": round(
+            sum(item.get("matches", 0) for item in history) / len(history),
+            1
+        ) if history else 0,
+        "top_keyword": top_keyword,
+        "latest_keyword": latest_keyword,
+        "last_search": last_search,
+        "level_stats": level_stats
+    }
+
+    file_data = BytesIO()
+    text_stream = json.dumps(stats, indent=2)
+
+    file_data.write(text_stream.encode("utf-8"))
+    file_data.seek(0)
+
+    return send_file(
+        file_data,
+        as_attachment=True,
+        download_name="history_stats.json",
+        mimetype="application/json"
+    )
         
     
 if __name__ == "__main__":
     app.run(debug=True)
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
