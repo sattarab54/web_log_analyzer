@@ -42,6 +42,16 @@ def highlight_keyword(line, keyword, case_sensitive=False):
 
     return Markup(highlighted)
 
+def clean_export_results(results):
+    cleaned = []
+
+    for line in results:
+        line = line.replace("<mark>", "")
+        line = line.replace("</mark>", "")
+        cleaned.append(line)
+
+    return cleaned
+
 @app.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "POST":
@@ -177,7 +187,7 @@ def index():
             latest_results_rows.append([timestamp, level, message])
         
         history.append({
-            "keyword": keyword,
+            "keyword": keyword.strip() or "Not set",
             "levels": ", ".join(selected_levels),       
             "matches": len(results),
             "searched_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -1093,7 +1103,7 @@ def download_filtered_history_json():
         ]
 
     if history_sort == "newest":
-        display_histry = list(reversed(display_history))
+        display_history = list(reversed(display_history))
 
     elif history_sort == "oldest":
         dispaly_history = display_history
@@ -1105,7 +1115,21 @@ def download_filtered_history_json():
         )
     file_data = BytesIO()
 
-    text_stream = json.dumps(display_history, indent=2)
+    export_history = []
+
+    for item in display_history:
+        new_item = item.copy()
+
+        if not new_item.get("keyword", "").strip():
+            new_item["keyword"] = "Not set"
+
+        new_item["results"] = clean_export_results(
+            new_item.get("results", [])
+        )
+
+        export_history.append(new_item)
+        
+    text_stream = json.dumps(export_history, indent=2)
 
     file_data.write(text_stream.encode("utf-8"))
     file_data.seek(0)
@@ -1113,7 +1137,7 @@ def download_filtered_history_json():
     return send_file(
         file_data,
         as_attachment=True,
-        download_name="filtered_histoey.json",
+        download_name="filtered_history.json",
         mimetype="application/json"
     )
         
