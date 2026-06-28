@@ -74,6 +74,16 @@ pre {
     border-radius: 6px;
     overflow-x: auto;
 }
+
+.critical-line {
+    border-left: 4px solid #d32f2f;
+    background-color: #ffe5e5;
+    color: #8b0000;
+    font-weight: bold;
+    padding: 10px;
+    border-radius: 6px;
+}
+
 .error-line {
     border-left-color: #dc2626;
 }
@@ -88,6 +98,13 @@ pre {
 
 .debug-line {
     border-left-color: #6b7280;
+}
+
+.trace-line {
+    border-left: 4px solid #777777;
+    background-color: #eeeeee;
+    padding: 10px;
+    border-radius: 6px;
 }
 
 .chart-row {

@@ -41,16 +41,20 @@
         <ul>
         {% for line in results %}
             <li>
-                {% if line.startswith("ERROR") %}
-                    <pre class="error-line">{{ line | safe}}</pre>
+                {% if line.startswith("CRITICAL") %}
+                    <pre class="critical-line">{{ line | safe }}</pre>
+                {% elif line.startswith("ERROR") %}
+                    <pre class="error-line">{{ line | safe }}</pre>
                 {% elif line.startswith("WARNING") %}
                     <pre class="warning-line">{{ line | safe }}</pre>
-                {% elif line.startswith("INFO") %}
-                    <pre class="info-line">{{line}}</pre>
+                 {% elif line.startswith("INFO") %}
+                    <pre class="info-line">{{ line | safe }}</pre>
                 {% elif line.startswith("DEBUG") %}
-                    <pre class="debug-line">{{ line | safe}}</pre>
+                    <pre class="debug-line">{{ line | safe }}</pre>
+                {% elif line.startswith("TRACE") %}
+                    <pre class="trace-line">{{ line | safe }}</pre>
                 {% else %}
-                    <pre>{{ line | safe}}</pre>
+                    <pre>{{ line | safe }}</pre>
                 {% endif %}
             </li>
         {% endfor %}
