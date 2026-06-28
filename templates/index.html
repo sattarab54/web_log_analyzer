@@ -20,8 +20,18 @@
         <input type="file" name="log_file"><br><br>
 
         <label>Keyword filter:</label><br>
-        <input type="text" name="keyword" placeholder="failed" autocomplete="new_password><br>
+        <input type="text" name="keyword" placeholder="failed" autocomplete="new_password"><br><br>
+        
+        <label>Quick presets:</label><br>
+        
+        <button type="button" onclick="document.getElementsByName('keyword')[0].value='critical'">Critical</button>
+        <button type="button" onclick="document.getElementsByName('keyword')[0].value='error'">Error</button>
+        <button type="button" onclick="document.getElementsByName('keyword')[0].value='warning'">Warning</button>
+        <button type="button" onclick="document.getElementsByName('keyword')[0].value='login'">Login</button>
+        <button type="button" onclick="document.getElementsByName('keyword')[0].value=''">Clear</button>
 
+        <br><br>
+        
         <label class="checkbox-label">
             <input type="checkbox" name="case_sensitive">
             Case-sensitive search

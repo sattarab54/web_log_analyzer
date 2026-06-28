@@ -53,8 +53,9 @@ input[type="text"] {
 }
 
 button {
-    margin-top: 15px;
+    display: inline-block;
     padding: 10px 20px;
+    margin: 5px;    
     cursor: pointer;
 }
 
