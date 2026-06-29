@@ -1288,6 +1288,53 @@ def download_analysis_csv():
         mimetype="text/csv"
     )
 
+@app.route("/download-analysis-json")
+def download_analysis_json():
+    latest = history[-1] if history else {}
+
+    results = []
+
+    for line in latest.get("results", []):
+        line = line.replace("<mark>", "")
+        line = line.replace("</mark>", "")
+
+        parts = line.split(" ", 1)
+
+        if len(parts) == 2:
+            level = parts[0]
+            message = parts[1]
+        else:
+            level = "UNKNOWN"
+            message = line
+
+        results.append({
+            "level": level,
+            "message": message
+        })
+        print("JSON results count:", len(results))
+
+    data = {
+        "keyword": latest.get("keyword", "Not set"),
+        "levels": latest.get("levels", ""),
+        "matches": latest.get("matches", 0),
+        "results": results
+    }
+        
+             
+    file_data = BytesIO()
+    text_stream = json.dumps(data, indent=2)
+
+    file_data.write(text_stream.encode("utf-8"))
+    file_data.seek(0)
+
+    return send_file(
+        file_data,
+        as_attachment=True,
+        download_name="analysis_results.json",
+        mimetype="application/json"
+    )
+    
+
         
     
 if __name__ == "__main__":
