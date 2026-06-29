@@ -1222,6 +1222,72 @@ def download_stats_json():
         download_name="history_stats.json",
         mimetype="application/json"
     )
+
+@app.route("/download-analysis-txt")
+def download_analysis_txt():
+    lines = []
+    if history:
+        latest = history[-1]
+
+        lines.append(f"Keyword: {latest.get('keyword', 'Not set')}")
+        lines.append(f"Levels: {latest.get('levels', 'All')}")
+        lines.append(f"Matches: {latest.get('matches', 0)}")
+        lines.append("")
+        lines.append("-" * 40)
+
+        for line in latest.get("results", []):
+            line = line.replace("<msrks>", "")
+            line = line.replace("</marks>", "")
+            lines.append(line)
+
+    text = "\n".join(lines)
+                
+    file_data = BytesIO()
+    file_data.write(text.encode("utf-8"))
+    file_data.seek(0)
+
+    return send_file(
+        file_data,
+        as_attachment=True,
+        download_name="analysis_results.txt",
+        mimetype="text/plain"
+    )
+
+@app.route("/download-analysis-csv")
+def download_analysis_csv():
+    file_data = BytesIO()
+    text_stream = StringIO()
+    writer = csv.writer(text_stream)
+
+    writer.writerow(["Level", "Message"])
+
+    if history:
+        latest = history[-1]
+
+        for line in latest.get("results", []):
+            line = line.replace("<marks>", "")
+            line = line.replace("</marks>", "")
+
+            parts = line.split(" ", 1)
+
+            if len(parts) == 2:
+                level = parts[0]
+                message = parts[1]
+            else:
+                level = "UNKNOWN"
+                message = line
+
+            writer.writerow([level, message])
+    file_data.write(text_stream.getvalue().encode("utf-8"))
+    file_data.seek(0)
+
+    return send_file(
+        file_data,
+        as_attachment=True,
+        download_name="analysis_results.csv",
+        mimetype="text/csv"
+    )
+
         
     
 if __name__ == "__main__":
