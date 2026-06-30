@@ -1333,6 +1333,121 @@ def download_analysis_json():
         download_name="analysis_results.json",
         mimetype="application/json"
     )
+
+@app.route("/download-analysis-html")
+def download_analysis_html():
+    latest = history[-1] if history else {}
+
+    keyword = latest.get("keyword", "Not set")
+    levels = latest.get("levels", "")
+    matches = latest.get("matches", 0)
+
+    result_lines = ""
+    for line in latest.get("results", []):
+        line = line.replace("<marks>", "")
+        line = line.replace("</marks>", "")
+        if line.startswith("CRITICAL"):
+            css_class = "critical-report"
+        elif line.startswith("ERROR"):
+            css_class = "error-report"
+        elif line.startswith("WARNING"):
+            css_class = "warning-report"
+        elif line.startswith("INFO"):
+            css_class = "info-report"
+        elif line.startswith("DEBUG"):
+            css_class = "debug-report"
+        elif line.startswith("TRACE"):
+            css_class = "trace-report"
+        else:
+            css_class = ""
+            
+        result_lines += f'<li><pre class="{css_class}">{line}</pre></li>'
+        
+    html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Analysis Report</title>
+        <style>
+            body {{
+                font-family: Arial, sans-serif;
+                background-color: #f4f6f8;
+                padding: 30px;
+            }}
+            .report {{
+                max-width: 900px;
+                margin: auto;
+                background: white;
+                border-radius: 10px;
+            }}
+
+            pre {{
+                padding: 10px;
+                border-left: 5px solid #555;
+                background-color: #f1f1f1;
+                border-radius: 6px;
+            }}
+
+            .critical-report {{
+                border-left-color: #b00020;
+                background-color: #ffe5e5;
+            }}
+
+            .error-report {{
+                border-left-color: #d32f2f;
+                background-color: #fff0f0;
+            }}
+
+            .warning-report {{
+                border-left-color: #f9a825;
+                background-color: #fff8d6;
+            }}
+
+            .info-report {{
+                border-left-color: #1976d2;
+                background-color: #e8f2ff;
+            }}
+
+            .debug-report {{
+                border-left-color: #2e7d32;
+                background-color: #eaf7ea;
+            }}
+
+            .trace-report {{
+                border-left-color: #777777;
+                background-color: #eeeeee;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="report">
+        </div>
+    </body>
+        <h1>Analysis Report</h1>
+
+        <p><strong>Keyword:<strong> {keyword}</p>
+        <p><strong>Levels:</strong> {levels}</p>
+        <p><strong>Matches:</strong> {matches}</p>
+
+        <h2>Matching Lines</h2>
+        <ul>
+            {result_lines}
+        </ul>
+    </body>
+    </html>
+    """
+
+    file_data=BytesIO()
+    file_data.write(html.encode("utf-8"))
+    file_data.seek(0)
+
+    return send_file(
+        file_data,
+        as_attachment=True,
+        download_name="analysis_report.html",
+        mimetype="text/html"
+    )
+    
     
 
         
