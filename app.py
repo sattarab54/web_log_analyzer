@@ -1447,8 +1447,49 @@ def download_analysis_html():
         download_name="analysis_report.html",
         mimetype="text/html"
     )
+
+@app.route("/download-analysis-excel")
+def download_analysis_excel():
+
+    latest = history[-1] if history else {}
+
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.title = "Analysis Results"
+
+    sheet["A1"] = "Level"
+    sheet["B1"] = "Message"
+
+    for line in latest.get("results", []):
+        line = line.replace("<marks>", "")
+        line = line.replace("</marks>", "")
+
+        parts = line.split(" ", 1)
+
+        if len(parts) ==2:
+            level = parts[0]
+            message = parts[1]
+        else:
+            level = "UNKNOWN"
+            message = line
+
+        sheet.append([level, message])
+
+    file_data = BytesIO()
+    workbook.save(file_data)
+    file_data.seek(0)
+
+    return send_file(
+        file_data,
+        as_attachment=True,
+        download_name="analysis_results.xlsx",
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
     
     
+    
+
 
         
     
