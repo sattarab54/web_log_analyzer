@@ -10,6 +10,9 @@ from openpyxl.styles import Font, PatternFill, Font
 import re
 import csv
 import json
+from reportlab.platypus import SimpleDocTemplate, Paragraph
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.colors import red, darkred, orange, blue, green, gray
 
 app = Flask(__name__)
 
@@ -1485,6 +1488,75 @@ def download_analysis_excel():
         download_name="analysis_results.xlsx",
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+
+@app.route("/download-analysis-pdf")
+def download_analysis_pdf():
+
+    latest = history[-1] if history else {}
+
+    file_data =BytesIO()
+
+    doc = SimpleDocTemplate(file_data)
+    styles = getSampleStyleSheet()
+
+    critical_style = styles["Normal"].clone("CriticalStyle")
+    critical_style.textColor = darkred
+
+    error_style = styles["Normal"].clone("ErrorStyle")
+    error_style.textColor = red
+
+    warning_style = styles["Normal"].clone("WarningStyle")
+    warning_style.textColor = orange
+
+    info_style = styles["Normal"].clone("InfoStyle")
+    info_style.textColor = blue
+
+    debug_style = styles["Normal"].clone("DebugStyle")
+    debug_style.textColor = green
+
+    trace_style = styles["Normal"].clone("TraceStyle")
+    trace_style.textColor = gray
+    
+    story = []
+
+    story.append(Paragraph("Analysis Report", styles["Title"]))
+    story.append(Paragraph(f"Keyword: {latest.get('keyword', 'Not set')}", styles["Normal"]))
+    story.append(Paragraph(f"Levels: {latest.get('levels', '')}", styles["Normal"]))
+    story.append(Paragraph(f"Matches: {latest.get('matches', 0)}", styles["Normal"]))
+    story.append(Paragraph("<br/><b>Matching Lines</b>", styles["Heading2"]))
+
+    for line in latest.get("results", []):
+        line = line.replace("<mark>", "")
+        line = line.replace("</mark>", "")
+
+        if line.startswith("CRITICAL"):
+            style = critical_style
+        elif line.startswith("ERROR"):
+            style = error_style
+        elif line.startswith("WARNING"):
+            style = warning_style
+        elif line.startswith("INFO"):
+            style = info_style
+        elif line.startswith("DEBUG"):
+            style = debug_style
+        elif line.startswith("TRACE"):
+            style = trace_style
+        else:
+            style = styles["Normal"]
+                                                    
+        story.append(Paragraph(line, style))
+
+    doc.build(story)
+
+    file_data.seek(0)
+
+    return send_file(
+        file_data,
+        as_attachment=True,
+        download_name="analysis_report.pdf",
+        mimetype="application/pdf"
+    )
+    
 
     
     
