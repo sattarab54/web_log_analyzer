@@ -1496,8 +1496,20 @@ def download_analysis_pdf():
 
     file_data =BytesIO()
 
-    doc = SimpleDocTemplate(file_data)
+    doc = SimpleDocTemplate(
+        file_data,
+        leftMargin=40,
+        rightMargin=40,
+        topMargin=40,
+        bottomMargin=40,
+    )
+
     styles = getSampleStyleSheet()
+
+    from reportlab.lib.enums import TA_LEFT
+
+    title_style = styles["Title"].clone("LeftTitle")
+    title_style.alignment = TA_LEFT
 
     critical_style = styles["Normal"].clone("CriticalStyle")
     critical_style.textColor = darkred
@@ -1519,7 +1531,7 @@ def download_analysis_pdf():
     
     story = []
 
-    story.append(Paragraph("Analysis Report", styles["Title"]))
+    story.append(Paragraph("Analysis Report", title_style))
     story.append(Paragraph(f"Keyword: {latest.get('keyword', 'Not set')}", styles["Normal"]))
     story.append(Paragraph(f"Levels: {latest.get('levels', '')}", styles["Normal"]))
     story.append(Paragraph(f"Matches: {latest.get('matches', 0)}", styles["Normal"]))
@@ -1558,12 +1570,7 @@ def download_analysis_pdf():
     )
     
 
-    
-    
-    
-
-
-        
+                    
     
 if __name__ == "__main__":
     app.run(debug=True)
