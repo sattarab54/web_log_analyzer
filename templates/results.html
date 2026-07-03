@@ -237,18 +237,20 @@
                 {% set history_index = total_searches - loop.index %}
 
                 <a href="/view-history/{{ history_index }}">
-                    <button type="button">View</button>
+                    <button type="button" class="action-button view-button">View</button>
                 </a>
 
                 <form action="delete-history/{{ history_index }}" method="POST" style="display:inline;">
-                    <button type="submit">Delete</button>
+                    <button type="submit" class="action-button delete-button">Delete</button>
                 </form>
             </td>
         </tr>
         {% endfor %}
         <br>
         <form action="/clear-history" method="POST">
-            <button type="submit">Clear History</button>
+            <button type="submit" class="action-button clear-button">
+                Clear History
+            </button>
         </form>
     </table>
     {% else %}
@@ -256,21 +258,28 @@
     {% endif %}
     
     <br><br>
-    <a href="/download">Download Results</a>
-    <a href="/download-csv">Download CSV</a>
-    <a href="/download-history-csv">Download History CSV</a>
-    <a href="/download-filtered-history-excel?history_search={{ history_search }}&history_sort={{ history_sort }}">
-        Download Filtered History Excel
-    </a>
-    <a href="/download-filtered-history-json">
-        Download Filtered History JSON
-    </a>
-    <a href="/download-filtered-history-csv?history_search={{ history_search }}&history_sort={{ history_sort }}">
-        Download Filtered History CSV
-    </a>
-    <a href="/download-history-excel">Download Excel</a>
-    <a href="/download-stats">Download Stats</a>
-    <a href="/download-stats-csv">Download Stats CSV</a>    
+    <h3>Analysis Exports</h3>
+
+    <div class="export-buttons">
+    
+        <a href="/download">Results JSON</a>
+        <a href="/download-csv">Results CSV</a>
+        <a href="/download-history-csv">History CSV</a>
+        <a href="/download-filtered-history-excel?history_search={{ history_search }}&history_sort={{ history_sort }}">
+        Filtered Excel
+        </a>
+        <a href="/download-filtered-history-json">
+            Filtered JSON
+        </a>
+        <a href="/download-filtered-history-csv?history_search={{ history_search }}&history_sort={{ history_sort }}">
+            Filtered CSV
+        </a>
+        <a href="/download-history-excel">History Excel</a>
+        <a href="/download-stats">Stats JSON</a>
+        <a href="/download-stats-csv">Stats CSV</a>
+    </div>
+    <br>
+
     <a href="/">Analyze another log</a>
     </div>
 </body>

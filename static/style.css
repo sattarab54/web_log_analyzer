@@ -193,7 +193,51 @@ pre {
     padding: 4px;
     min-width: 25px;
 }
-    
+
+.export-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 15px 0;
+}
+
+.export-buttons a {
+    display: inline-block;
+    padding: 10px 16px;
+    background-color: #1976d2;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+.export-buttons a:hover {
+     background-color: #125ca1;
+}
+
+.action-button {
+    display: inline-block;
+    padding: 6px 14px;
+    text_decorayion: none;
+    border_radius: 6px;
+    font_weight: bold;
+    color: white;
+    border: none;
+    curser: pointer;
+}
+
+.view-button {
+    background-color: #0d6efd;
+}
+
+.delete-button {
+    background-color: #dc3545
+}
+
+.clear-button {
+    background-color: #dc3545;
+}    
 
 
 
