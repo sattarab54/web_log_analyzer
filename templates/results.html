@@ -266,6 +266,29 @@
             </button>
         </form>
     </table>
+
+    {% if total_pages > 1 %}
+    <div style="margin-top:20px;">
+
+        {% if page > 1 %}
+            <a href="/filter-history?page={{ page - 1 }}&history_sort={{ history_sort }}&history_search={{ history_search }}">
+                Previous
+            </a>
+        {% endif %}
+
+        <span style="margin:0 15px;">
+            Page {{ page }} of {{ total_pages }}
+        </span>
+
+        {% if page < total_pages %}
+            <a href="/filter-history?page={{ page + 1 }}&history_sort={{ history_sort }}&history_search={{ history_search }}">
+                Next
+            </a>
+        {% endif %}
+
+    </div>
+    {% endif %}
+    
     {% else %}
     <p>No history yet.</p>
     {% endif %}

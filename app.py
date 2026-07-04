@@ -197,7 +197,7 @@ def index():
             "results": results,
         })
 
-        if len(history) > 5:
+        if len(history) > 100:
             history.pop(0)
 
         save_history(history)
@@ -304,6 +304,9 @@ def index():
         history_search = request.args.get("history_search", "")
         history_sort = request.args.get("history_sort", "newest")
 
+        page = int(request.args.get("page", 1))
+        per_page = 10
+
         display_history = history
 
         if history_search:
@@ -340,7 +343,10 @@ def index():
             start_datetime_text=start_datetime_text,
             end_datetime_text=end_datetime_text,
             history=history,
-            display_history=display_history,
+            display_history=display_history[:10],
+            page=1,
+            total_pages=(len(display_history) +10 - 1) // 10,
+            per_page=10,
             history_search=history_search,
             total_searches=total_searches,            
             successful_searches=successful_searches,
@@ -444,6 +450,10 @@ def view_history(index):
         end_datetime_text="",
         history=history,
         display_history=display_history,
+        history_sort="newest",
+        page=1,
+        total_pages=1,
+        per_page=10,
         history_search="",
         total_searches=total_searches,
         successful_searches=successful_searches,        
@@ -454,7 +464,7 @@ def view_history(index):
         last_search_time=item.get("searched_at", ""),
         level_stats=level_stats,
         most_keyword=most_keyword,
-        history_sort="newest",
+        
         chart_labels=chart_labels,
         chart_values=chart_values,
     )
@@ -507,7 +517,14 @@ def filter_history():
             key=lambda item: item.get("matches", 0)
         )
 
-    latest_filtered_history = display_history
+    total_pages = (len(display_history) + per_page - 1) // per_page
+
+    start = (page - 1) * per_page
+    end = start + per_page
+
+    paged_history = display_history[start:end]
+
+    latest_filtered_history = paged_history
 
     level_stats = {
         "CRITICAL": 0,
@@ -577,8 +594,12 @@ def filter_history():
         source_name="History filter",
         start_datetime_text="",
         end_datetime_text="",
-        history=display_history,
-        display_history=display_history,
+        history=history,
+        display_history=paged_history,
+        paged_history=paged_history,
+        page=page,
+        total_pages=total_pages,
+        per_page=per_page,                        
         history_sort=history_sort,
         history_search=history_search,
         total_searches=len(history),
