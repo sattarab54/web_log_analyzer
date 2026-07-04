@@ -320,7 +320,7 @@ def index():
         chart_labels = []
         chart_values = []
 
-        for item in history:
+        for item in display_history:
             label = item.get("keyword", "").strip()
             if not label:
                 label = "Not set"
@@ -339,7 +339,8 @@ def index():
             source_name=source_name,
             start_datetime_text=start_datetime_text,
             end_datetime_text=end_datetime_text,
-            history=display_history,
+            history=history,
+            display_history=display_history,
             history_search=history_search,
             total_searches=total_searches,            
             successful_searches=successful_searches,
@@ -427,6 +428,8 @@ def view_history(index):
                 keyword_counts,
                 key=keyword_counts.get
             )
+
+        display_history = history
         
     return render_template(
         "results.html",
@@ -440,6 +443,7 @@ def view_history(index):
         start_datetime_text="",
         end_datetime_text="",
         history=history,
+        display_history=display_history,
         history_search="",
         total_searches=total_searches,
         successful_searches=successful_searches,        
@@ -467,6 +471,7 @@ def delete_history(index):
 def filter_history():
     global latest_filtered_history
     history_search = request.args.get("history_search", "")
+    history_sort = request.args.get("history_sort", "newest")
 
     display_history = history
 
@@ -475,6 +480,33 @@ def filter_history():
             item for item in history
             if history_search.lower() in item["keyword"].lower()
         ]
+
+    if history_sort == "newest":
+        display_history = sorted(
+            display_history,
+            key=lambda item: item.get("searched_at", ""),
+            reverse=True,
+        )
+
+    elif history_sort == "oldest":
+        display_history = sorted(
+            display_history,
+            key=lambda item: item.get("searched_at", "")
+        )
+    
+    elif history_sort == "matches_high": 
+        display_history = sorted(
+            display_history,
+            key=lambda item: item.get("matches", 0),
+            reverse=True
+        )
+
+    elif history_sort == "matches_low":
+        display_history = sorted(
+            display_history,
+            key=lambda item: item.get("matches", 0)
+        )
+
     latest_filtered_history = display_history
 
     level_stats = {
@@ -546,6 +578,8 @@ def filter_history():
         start_datetime_text="",
         end_datetime_text="",
         history=display_history,
+        display_history=display_history,
+        history_sort=history_sort,
         history_search=history_search,
         total_searches=len(history),
         successful_searches=sum(1 for item in history if item["matches"] > 0),

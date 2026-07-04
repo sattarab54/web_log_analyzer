@@ -215,7 +215,20 @@
 
     <h2>Analysis History</h2>
     
-    {% if history %}
+    {% if display_history %}
+    <form method="Get" action="/filter-history">
+        <label>Sort history: </label>
+        <select name="history_sort">
+            <option value="newest" {% if history_sort == "newest" %}selected{% endif %}>Newest first</option>
+            <option value="oldest" {% if history_sort == "oldest" %}selected{% endif %}>Oldest first</option>
+            <option value="matches_high" {% if history_sort == "matches_high" %}selected{% endif %}>Most matches</option>
+            <option value="matches_low" {% if history_sort == "matches_low" %}selected{% endif %}>Fewest matches</option>
+        </select>
+
+        <input type="hidden" name="history_search" value="{{ history_search }}">
+        <button type="submit">Apply Sort</button>
+    </form>
+
     <table border="1" cellpadding="6">
         <tr>
             <th>#</th>
@@ -226,7 +239,7 @@
             <th>Action</th>
         </tr>
 
-        {% for item in history | reverse %}
+        {% for item in display_history %}
         <tr>
             <td>{{ loop.index}}</td>
             <td>{{ item.keyword or "Not set" }}</td>
@@ -234,7 +247,7 @@
             <td>{{ item.matches }}</td>
             <td>{{ item.searched_at }}</td>
             <td>
-                {% set history_index = total_searches - loop.index %}
+                {% set history_index = history.index(item) %}
 
                 <a href="/view-history/{{ history_index }}">
                     <button type="button" class="action-button view-button">View</button>
