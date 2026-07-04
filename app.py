@@ -517,13 +517,15 @@ def filter_history():
             key=lambda item: item.get("matches", 0)
         )
 
+    page = int(request.args.get("page", 1))
+    per_page = 10
+
     total_pages = (len(display_history) + per_page - 1) // per_page
 
     start = (page - 1) * per_page
     end = start + per_page
 
     paged_history = display_history[start:end]
-
     latest_filtered_history = paged_history
 
     level_stats = {
