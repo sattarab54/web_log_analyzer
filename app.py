@@ -486,9 +486,13 @@ def filter_history():
     display_history = history
 
     if history_search:
+        search = history_search.lower()
         display_history = [
             item for item in history
-            if history_search.lower() in item["keyword"].lower()
+            if (
+                search in item.get("keyword", "").lower()
+                or search in item.get("searched_at", "").lower()
+            ) 
         ]
 
     if history_sort == "newest":
