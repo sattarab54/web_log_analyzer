@@ -482,6 +482,8 @@ def filter_history():
     global latest_filtered_history
     history_search = request.args.get("history_search", "")
     history_sort = request.args.get("history_sort", "newest")
+    history_from = request.args.get("history_from", "")
+    history_to = request.args.get("history_to", "")
 
     display_history = history
 
@@ -493,6 +495,18 @@ def filter_history():
                 search in item.get("keyword", "").lower()
                 or search in item.get("searched_at", "").lower()
             ) 
+        ]
+
+    if history_from:
+        display_history = [
+            item for item in display_history
+            if item.get("searched_at", "")[:10] >= history_from
+        ]
+
+    if history_to:
+        display_history = [
+            item for item in display_history
+            if item.get("searched_at", "")[:10] <= history_to
         ]
 
     if history_sort == "newest":
@@ -521,6 +535,8 @@ def filter_history():
             key=lambda item: item.get("matches", 0)
         )
 
+    stats_history = display_history
+
     page = int(request.args.get("page", 1))
     per_page = 10
 
@@ -532,6 +548,18 @@ def filter_history():
     paged_history = display_history[start:end]
     latest_filtered_history = paged_history
 
+    chart_labels = []
+    chart_values = []
+
+    for item in  display_history:
+        label = item.get("keyword", "").strip()
+
+        if not label:
+            label = "Not set"
+
+        chart_labels.append(label)
+        chart_values.append(item.get("matches", 0))
+
     level_stats = {
         "CRITICAL": 0,
         "ERROR": 0,
@@ -541,7 +569,7 @@ def filter_history():
         "TRACE": 0,
     }
 
-    for item in history:
+    for item in stats_history:
         levels_text = item.get("levels", "")
 
         for level in level_stats:
@@ -550,32 +578,32 @@ def filter_history():
 
     total_matches_found = sum(
         item.get("matches", 0)
-        for item in history
+        for item in stats_history
     )
 
     success_rate = 0
-    if len(history) > 0:
-        success_rate = round((sum(1 for item in history if item["matches"] > 0) / len(history)) * 100)
+    if len(stats_history) > 0:
+        success_rate = round((sum(1 for item in stats_history if item["matches"] > 0) / len(stats_history)) * 100)
 
     average_matches = 0
-    if len(history) > 0:
-        average_matches = round(total_matches_found / len(history), 1)
+    if len(stats_history) > 0:
+        average_matches = round(total_matches_found / len(stats_history), 1)
 
     latest_keyword = "Not set"
-    if history:
-        latest_keyword = history[-1].get("keyword", "").strip()
+    if stats_history:
+        latest_keyword = stats_history[0].get("keyword", "").strip()
         if not latest_keyword:
             latest_keyword = "Not set"
 
     last_searh_time = "N/A"
-    if history:
-        last_search_time = history[-1].get("searched_at") or "N/A"
+    if stats_history:
+        last_search_time = stats_history[0].get("searched_at") or "N/A"
 
     most_keyword = "Not set"
 
     keyword_counts = {}
 
-    for item in history:
+    for item in stats_history:
         key = item.get("keyword", "").strip()
 
         if not key:
@@ -608,8 +636,10 @@ def filter_history():
         per_page=per_page,                        
         history_sort=history_sort,
         history_search=history_search,
-        total_searches=len(history),
-        successful_searches=sum(1 for item in history if item["matches"] > 0),
+        history_from=history_from,
+        history_to=history_to,
+        total_searches=len(stats_history),
+        successful_searches=sum(1 for item in stats_history if item["matches"] > 0),
         total_matches_found=total_matches_found,
         success_rate=success_rate,
         average_matches=average_matches,
@@ -617,6 +647,8 @@ def filter_history():
         last_search_time=last_search_time,
         level_stats=level_stats,
         most_keyword=most_keyword,
+        chart_labels=chart_labels,
+        chart_values=chart_values,
     )
 
 @app.route("/download")
@@ -1029,6 +1061,8 @@ def download_history_excel():
 def download_filtered_history_excel():
     history_search = request.args.get("history_search", "")
     history_sort = request.args.get("history_sort", "newest")
+    history_from = request.args.get("history_from", "")
+    history_to = request.args.get("history_to", "")
 
     display_history = history
 
@@ -1041,6 +1075,18 @@ def download_filtered_history_excel():
             )
         ]
 
+    if history_from:
+        display_history = [
+            item for item in history
+            if item.get("searched_at", "")[:10] >= history_from
+        ]
+
+    if history_to:
+        display_history = [
+            item for item in history
+            if item.get("searches_at", "")[:10] <= history_to
+        ]
+                                            
     if history_sort == "newest":
         display_history = list(reversed(display_history))
 
@@ -1106,17 +1152,33 @@ def download_filtered_history_excel():
 def download_filtered_history_csv():
     history_search = request.args.get("history_search", "")
     history_sort = request.args.get("history_sort", "newest")
-
+    history_from = request.args.get("history_from", "")
+    history_to = request.args.get("history_to", "")
+        
     display_history = history
 
     if history_search:
+        search = history_search.lower()
         display_history = [
             item for item in history
             if (
-                history_search.lower() in item.get("keyword", "").lower()
-                or history_search.lower() in item.get("levels", "").lower()
+                search in item.get("keyword", "").lower()
+                or search in item.get("searched_at", "").lower()
             )
         ]
+
+    if history_from:
+        display_history= [
+            item for item in display_history
+            if item.get("searched_at", "")[:10] >= history_from
+        ]
+
+    if history_to:
+        display_history = [
+            item for item in display_history
+            if item .get("searched_at", "")[:10] <= history_to
+        ]
+        
     if history_sort == "newest":
         display_history = list(reversed(display_history))
 
@@ -1154,6 +1216,8 @@ def download_filtered_history_csv():
 def download_filtered_history_json():
     history_search = request.args.get("history_search", "")
     history_sort = request.args.get("history_sort", "newest")
+    history_from = request.args.get("history_from", "")
+    history_to = request.args.get("history_to", "")
 
     display_history = history
 
@@ -1164,6 +1228,18 @@ def download_filtered_history_json():
                 history_search.lower() in item.get("keyword", "").lower()
                 or history_search.lower() in item.get("levels", "").lower()
             )
+        ]
+
+    if history_from:
+        display_history = [
+            item for item in display_history
+            if item.get("searched_at", "")[:10] >= history_from
+        ]
+
+    if history_to:
+        display_history = [
+            item for item in display_history
+            if item.get("searched_at", "")[:10] <= history_to
         ]
 
     if history_sort == "newest":

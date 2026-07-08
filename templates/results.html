@@ -34,33 +34,37 @@
     <ul>
 
     
-
-    <h2>Matching Lines</h2>
-
-    {% if results %}
-        <ul>
-        {% for line in results %}
-            <li>
-                {% if line.startswith("CRITICAL") %}
-                    <pre class="critical-line">{{ line | safe }}</pre>
-                {% elif line.startswith("ERROR") %}
-                    <pre class="error-line">{{ line | safe }}</pre>
-                {% elif line.startswith("WARNING") %}
-                    <pre class="warning-line">{{ line | safe }}</pre>
-                 {% elif line.startswith("INFO") %}
-                    <pre class="info-line">{{ line | safe }}</pre>
-                {% elif line.startswith("DEBUG") %}
-                    <pre class="debug-line">{{ line | safe }}</pre>
-                {% elif line.startswith("TRACE") %}
-                    <pre class="trace-line">{{ line | safe }}</pre>
-                {% else %}
-                    <pre>{{ line | safe }}</pre>
-                {% endif %}
-            </li>
-        {% endfor %}
-        </ul>
+    {% if source_name == "History filter" %}
+        <h2>Current Analysis</h2>
+        <p>No current analysis results. Use the form to analyze a log.</p>
     {% else %}
-        <p>No matching lines found.</p>
+        <h2>Matching Lines</h2>
+
+        {% if results %}
+            <ul>
+            {% for line in results %}
+                <li>
+                    {% if line.startswith("CRITICAL") %}
+                        <pre class="critical-line">{{ line | safe }}</pre>
+                    {% elif line.startswith("ERROR") %}
+                        <pre class="error-line">{{ line | safe }}</pre>
+                    {% elif line.startswith("WARNING") %}
+                        <pre class="warning-line">{{ line | safe }}</pre>
+                    {% elif line.startswith("INFO") %}
+                        <pre class="info-line">{{ line | safe }}</pre>
+                    {% elif line.startswith("DEBUG") %}
+                        <pre class="debug-line">{{ line | safe }}</pre>
+                    {% elif line.startswith("TRACE") %}
+                        <pre class="trace-line">{{ line | safe }}</pre>
+                    {% else %}
+                        <pre>{{ line | safe }}</pre>
+                    {% endif %}                
+                </li>
+            {% endfor %}
+            </ul>
+        {% else %}
+            <p>No matching lines found.</p>
+        {% endif %}
     {% endif %}
 
     <h2>History Dashboard</h2>
@@ -189,6 +193,12 @@
                placeholder="Search history"
                value="{{ history_search }}">
 
+    <label>From:</label>
+        <input type "date" name="history_from" value="{{ history_from }}">
+
+    <label>To:</label>
+        <input type="date" name="history_to" value="{{ history_to }}">
+
         <select name="history_sort">
             <option value="newest" {% if history_sort == "newest" %}selected{% endif %}>Newest first</option>
             <option value="oldest" {% if history_sort == "oldest" %}selected{% endif %}>Oldest first</option>
@@ -271,7 +281,7 @@
     <div style="margin-top:20px;">
 
         {% if page > 1 %}
-            <a href="/filter-history?page={{ page - 1 }}&history_sort={{ history_sort }}&history_search={{ history_search }}">
+            <a href="/filter-history?page={{ page - 1 }}&history_sort={{ history_sort }}&history_search={{ history_search }}&history_from={{ history_from }}&history_to={{ history_to }}">
                 Previous
             </a>
         {% endif %}
@@ -284,7 +294,7 @@
             {% if page_num == page %}
                 <strong style="margin:0 5px;">{{ page_num }}</strong>
             {% else %}
-                <a href="/filter-history?page={{ page_num }}&history_sort={{ history_sort }}&history_search={{ history_search }}"
+                <a href="/filter-history?page={{ page_num }}&history_sort={{ history_sort }}&history_search={{ history_search }}&history_from={{ history_from }}&history_to={{ history_to }}"
                    style="margin:0 5px;">
                     {{ page_num }}
                 </a>
@@ -292,7 +302,7 @@
         {% endfor %}                                             
                 
         {% if page < total_pages %}
-            <a href="/filter-history?page={{ page + 1 }}&history_sort={{ history_sort }}&history_search={{ history_search }}">
+            <a href="/filter-history?page={{ page + 1 }}&history_sort={{ history_sort }}&history_search={{ history_search }}&history_from={{ history_from }}&history_to={{ history_to }}">
                 Next
             </a>
         {% endif %}
@@ -312,13 +322,13 @@
         <a href="/download">Results JSON</a>
         <a href="/download-csv">Results CSV</a>
         <a href="/download-history-csv">History CSV</a>
-        <a href="/download-filtered-history-excel?history_search={{ history_search }}&history_sort={{ history_sort }}">
+        <a href="/download-filtered-history-excel?history_search={{ history_search }}&history_sort={{ history_sort }}&history_from={{ history_from }}7history_to={{ history_to }}">
         Filtered Excel
         </a>
-        <a href="/download-filtered-history-json">
+        <a href="/download-filtered-history-json?history_search={{ history_search }}&history_sort={{ history_sort }}&history_from={{ history_from }}&history_to={{ history_to }}">
             Filtered JSON
         </a>
-        <a href="/download-filtered-history-csv?history_search={{ history_search }}&history_sort={{ history_sort }}">
+        <a href="/download-filtered-history-csv?history_search={{ history_search }}&history_sort={{ history_sort }}&history_from={{ history_from }}&history_to={{ history_to }}">
             Filtered CSV
         </a>
         <a href="/download-history-excel">History Excel</a>
