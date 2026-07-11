@@ -6,7 +6,7 @@ from io import BytesIO, StringIO
 from datetime import datetime
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
-from openpyxl.styles import Font, PatternFill, Font
+from openpyxl.styles import Font, PatternFill, Alignment
 import re
 import csv
 import json
@@ -537,6 +537,25 @@ def filter_history():
 
     stats_history = display_history
 
+    visible_total_searches = len(stats_history)
+
+    visible_unique_keywords = len(set(
+        item.get("keyword", "").strip() or "Not set"
+        for item in stats_history
+    ))
+
+    visible_total_matches = sum(
+        item.get("matches", 0)
+        for item in stats_history
+    )
+
+    visible_first_search = "N/A"
+    visible_last_search = "N/A"
+
+    if stats_history:
+        visible_first_search = stats_history[0].get("searched_at") or "N/A"
+        visible_last_search = stats_history[-1].get("searched_at") or "N/A"
+                                             
     page = int(request.args.get("page", 1))
     per_page = 10
 
@@ -640,6 +659,11 @@ def filter_history():
         history_to=history_to,
         total_searches=len(stats_history),
         successful_searches=sum(1 for item in stats_history if item["matches"] > 0),
+        visible_total_searches=visible_total_searches,
+        visible_unique_keywords=visible_unique_keywords,
+        visible_total_matches=visible_total_matches,
+        visible_first_search=visible_first_search,
+        visible_last_search=visible_last_search,
         total_matches_found=total_matches_found,
         success_rate=success_rate,
         average_matches=average_matches,
@@ -824,7 +848,21 @@ def download_stats_csv():
 
     csv_data.write(f"Total matches found,{total_matches}\n")
 
-    csv_data.write("Most searched keyword,Not set\n")
+    keyword_counts = {}
+
+    for item in history:
+        keyword = item . get("keyword", "").strip()
+        if keyword:
+            keyword_counts[keyword] = keyword_counts.get(keyword, 0) + 1
+
+    most_searched_keyword = (
+        max(keyword_counts, key=keyword_counts.get)
+        if keyword_counts
+        else "Not set"
+    )
+
+    csv_data.write(f"Most searched keyword, {most_searched_keyword}\n")
+    csv_data.write(f"Generated at, {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
 
     file_data = BytesIO()
     file_data.write(csv_data.getvalue().encode("utf-8"))
@@ -844,7 +882,7 @@ def download_history_excel():
     sheet.title = "History"
     sheet.freeze_panes = "A2"
 
-    sheet.append(["Keyword", "Levels", "Matches", "Searched At"])
+    sheet.append(["Keyword", "Levels", "Matches", "Searched At", "Results"])
     for cell in sheet[1]:
         cell.font = Font(bold=True)
 
@@ -860,27 +898,29 @@ def download_history_excel():
             item.get("keyword", ""),
             item.get("levels", ""),
             item.get("matches", ""),
-            item.get("searched_at", "")
+            item.get("searched_at", ""),
+            "\n".join(clean_export_results(item.get("results", [])))
         ])
+    
+        sheet.column_dimensions["E"].width = 60
 
-    for column in sheet.columns:
-        max_length = 0
-        column_letter = column[0].column_letter
+        for cell in sheet["E"]:
+            cell.alignment = Alignment(wrap_text=True, vertical="top")
 
-        for cell in column:
-            try:
-                if len(str(cell.value)) > max_length:
-                    max_length = len(str(cell.value))
-            except:
-                pass
-
-        sheet.column_dimensions[column_letter].width = max_length + 2
-
+        for row in sheet.iter_rows(min_row=2):
+            if row[0].row % 2 == 0:
+                for cell in row:
+                    cell.fill = PatternFill(
+                        fill_type="solid",
+                        start_color="EDEDED",
+                        end_color="EDEDED"
+                    )
+                    
+        sheet.auto_filter.ref = sheet.dimensions
+                
     summary_sheet = workbook.create_sheet("summary")
     summary_sheet.freeze_panes = "A2"
-
     
-
     summary_sheet.append(["Summary Metric", "value"])
 
     for cell in summary_sheet[1]:
@@ -891,7 +931,6 @@ def download_history_excel():
             end_color="D9EAD3"
         )
             
-
     stats_sheet = workbook.create_sheet("Stats")
     stats_sheet.freeze_panes = "A2"
 
@@ -905,7 +944,6 @@ def download_history_excel():
             start_color="D9EAD3",
             end_color="D9EAD3",
         )
-
     
     stats_sheet.append(["Total searches", len(history)])
 
@@ -1045,6 +1083,20 @@ def download_history_excel():
 
     summary_sheet.auto_filter.ref = summary_sheet.dimensions            
     stats_sheet.auto_filter.ref = stats_sheet.dimensions
+
+    for column in stats_sheet.columns:
+        max_length = 0
+        column_letter = column[0].column_letter
+
+        for cell in column:
+            try:
+                if len(str(cell.value)) > max_length:
+                    max_length = len(str(cell.value))
+            except:
+                pass
+
+        stats_sheet.column_dimensions[column_letter].width = max_length + 2
+
     
     file_data = BytesIO()
     workbook.save(file_data)
@@ -1077,14 +1129,14 @@ def download_filtered_history_excel():
 
     if history_from:
         display_history = [
-            item for item in history
+            item for item in display_history
             if item.get("searched_at", "")[:10] >= history_from
         ]
 
     if history_to:
         display_history = [
-            item for item in history
-            if item.get("searches_at", "")[:10] <= history_to
+            item for item in display_history
+            if item.get("searched_at", "")[:10] <= history_to
         ]
                                             
     if history_sort == "newest":

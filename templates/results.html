@@ -223,6 +223,34 @@
         <p>No chart data yet.</p>
     {% endif %}
 
+    <h2>Visible History Summary</h2>
+
+    <div class="dashboard-cards">
+        <div class="card">
+            <h3>{{ visible_total_searches }}</h3>
+            <p>Visible Searches</p>
+        </div>
+
+        <div class="card">
+            <h3>{{visible_unique_keywords }}</h3>
+            <p>Unique Keywords</p>
+        </div>
+
+        <div class="card">
+            <h3>{{ visible_total_matches }}</h3>
+            <p>Visible Matches</p>
+        </div>
+
+        <div class="card">
+            <h3>{{ visible_first_search }}</h3>
+            <p>First Visible Search</p>
+        </div>
+        
+        <div class="card">
+            <h3>{{ visible_last_search }}</h3>
+            <p>Last Visible Search</p>
+        </div>
+
     <h2>Analysis History</h2>
     
     {% if display_history %}
@@ -322,7 +350,7 @@
         <a href="/download">Results JSON</a>
         <a href="/download-csv">Results CSV</a>
         <a href="/download-history-csv">History CSV</a>
-        <a href="/download-filtered-history-excel?history_search={{ history_search }}&history_sort={{ history_sort }}&history_from={{ history_from }}7history_to={{ history_to }}">
+        <a href="/download-filtered-history-excel?history_search={{ history_search }}&history_sort={{ history_sort }}&history_from={{ history_from }}&history_to={{ history_to }}">
         Filtered Excel
         </a>
         <a href="/download-filtered-history-json?history_search={{ history_search }}&history_sort={{ history_sort }}&history_from={{ history_from }}&history_to={{ history_to }}">
