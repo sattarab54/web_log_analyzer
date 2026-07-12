@@ -874,6 +874,74 @@ def download_stats_csv():
         download_name="history_stats.csv",
         mimetype="text/csv"
     )
+
+@app.route("/download-stats-excel")
+def download_stats_excel():
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.title = "Stats"
+    sheet.freeze_panes = "A2"
+
+    sheet.append(["Metric", "Value"])
+
+    successful_searches = sum(
+        1
+        for item in history
+        if item .get("matches", 0) > 0
+    )
+
+    total_matches = sum(
+        item.get("matches", 0)
+        for item in history
+    )
+
+    keyword_counts = {}
+
+    for item in history:
+        keyword = item.get("keyword", "").strip()
+        if keyword:
+            keyword_counts[keyword] = keyword_counts.get(keyword, 0) + 1
+
+    most_searched_keyword = (
+        max(keyword_counts, key=keyword_counts.get)
+        if keyword_counts
+        else "Not set"
+    )
+
+    sheet.append(["Total searches", len(history)])
+    sheet.append(["Successful searches", successful_searches])
+    sheet.append(["Total matches found", total_matches])
+    sheet.append(["Most searched keyword", most_searched_keyword])
+    sheet.append(["Generated at", datetime.now().strftime("%Y-%m-%d %H:%M:%S")])
+
+    for column in sheet.columns:
+        max_length = 0
+        column_letter = column[0].column_letter
+
+        for cell in column:
+            if cell.value is not None:
+                max_length = max(max_length, len(str(cell.value)))
+
+        sheet.column_dimensions[column_letter].width = max_length + 2
+
+    for cell in sheet[1]:
+        cell.font = Font(bold=True)
+        cell.fill = PatternFill(
+            fill_type="solid",
+            start_color="D9EAD3",
+            end_color="D9EAD3"
+        )
+
+    file_data = BytesIO()
+    workbook.save(file_data)
+    file_data.seek(0)
+
+    return send_file(
+        file_data,
+        as_attachment=True,
+        download_name="history_stats.xlsx",
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
                                                                     
 @app.route("/download-history-excel")
 def download_history_excel():
