@@ -942,6 +942,50 @@ def download_stats_excel():
         download_name="history_stats.xlsx",
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+
+@app.route("/import-history", methods=["GET", "POST"])
+def import_hiatory():
+    if request.method == "POST":
+        uploaded_file = request.files.get("history_file")
+
+        if not uploaded_file or not uploaded_file.filename.lower().endswith(".json"):
+            return "Please select a valid JSON file."
+
+        try:
+            imported_history = json.load(uploaded_file)
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            return "The selected file does not contain valid JSON."
+
+        if not isinstance(imported_history, list):
+            return "Invalid history file: the JSON must contain a list."
+
+        required_fields = {"keyword", "levels", "matches", "searched_at", "results"}
+
+        for item in imported_history:
+            if not isinstance(item, dict):
+                return "Invalid history file: every record must be an object."
+
+            if not required_fields.issubset(item):
+                return "Invaltd history file: one or more records are missing required fields."
+
+        new_records = []
+        duplicate_count = 0
+
+        for imported_item in imported_history:
+            if imported_item in history:
+                duplicate_count += 1
+            else:
+                new_records.append(imported_item)        
+                    
+        history.extend(new_records)
+
+        return (
+            f"Imported {len(new_records)} new history records.<br>"
+            f"Skipped {duplicate_count} duplicate records.<br><br>"
+            f'<a href="/filter-history"> Back to History</a>'
+        )
+                                   
+    return render_template("import_history.html")
                                                                     
 @app.route("/download-history-excel")
 def download_history_excel():
