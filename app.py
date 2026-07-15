@@ -484,6 +484,7 @@ def filter_history():
     history_sort = request.args.get("history_sort", "newest")
     history_from = request.args.get("history_from", "")
     history_to = request.args.get("history_to", "")
+    history_level =request.args.get("history_level", "")
 
     display_history = history
 
@@ -494,9 +495,16 @@ def filter_history():
             if (
                 search in item.get("keyword", "").lower()
                 or search in item.get("searched_at", "").lower()
+                or search in " ".join(item.get("results", [])).lower()
             ) 
         ]
 
+    if history_level:
+        display_history = [
+            item for item in display_history
+            if history_level in item.get("levels", "")
+        ]
+    
     if history_from:
         display_history = [
             item for item in display_history
@@ -653,10 +661,11 @@ def filter_history():
         page=page,
         total_pages=total_pages,
         per_page=per_page,                        
-        history_sort=history_sort,
+        history_sort=history_sort,        
         history_search=history_search,
         history_from=history_from,
         history_to=history_to,
+        history_level=history_level,
         total_searches=len(stats_history),
         successful_searches=sum(1 for item in stats_history if item["matches"] > 0),
         visible_total_searches=visible_total_searches,
@@ -688,6 +697,27 @@ def download_results():
         as_attachment=True,
         download_name="analysis_results.txt",
         mimetype="text/plain"
+    )
+
+@app.route("/download-backup")
+def download_backup():
+    backup_data = {
+        "backup_version": 1,
+        "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "history": history,
+    }
+
+    file_data = BytesIO()
+    file_data.write(
+        json.dumps(backup_data, indent=2).encode("utf-8")
+    )
+    file_data.seek(0)
+
+    return send_file(
+        file_data,
+        as_attachment=True,
+        download_name="web_log_analyzer_backup.json",
+        mimetype="application/json"
     )
 
 @app.route("/download-history-csv")
@@ -955,6 +985,11 @@ def import_hiatory():
             imported_history = json.load(uploaded_file)
         except (json.JSONDecodeError, UnicodeDecodeError):
             return "The selected file does not contain valid JSON."
+
+        if isinstance(imported_history, dict):
+            if "history" not in imported_history:
+                return "Invalid backup file: missing history data."
+            imported_history = imported_history["history"]
 
         if not isinstance(imported_history, list):
             return "Invalid history file: the JSON must contain a list."

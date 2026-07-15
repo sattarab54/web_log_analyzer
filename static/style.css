@@ -237,7 +237,15 @@ pre {
 
 .clear-button {
     background-color: #dc3545;
-}    
+}
+
+.reset-button {
+    background-color: #6c757d;
+}
+
+.reset-button:hover {
+    background-color: #5a6268;
+}
 
 
 

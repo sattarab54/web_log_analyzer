@@ -146,7 +146,7 @@
     <h3>Level Chart</h3>
 
     <div class="chart-row">
-        <span>CRIRICAL</span>
+        <span>CRITICAL</span>
         <div class="bar" style="width: {{ level_stats['CRITICAL'] * 30 }}px;">
             {{ level_stats["CRITICAL"] }}
         </div>
@@ -204,8 +204,35 @@
             <option value="oldest" {% if history_sort == "oldest" %}selected{% endif %}>Oldest first</option>
             <option value="keyword" {% if history_sort == "keyword" %}selected{% endif %}>Keyword A-Z </option>
         </select>
-    
+
+    <label for="history_level">Level:</label>
+        <select id="history_level" name="history_level">
+            <option value="" {% if history_level == "" %}selected{% endif %}>
+                All Levels
+            </option>
+            <option value="CRITICAL" {% if history_level == "CRITICAL" %}selected{% endif %}>
+                CRITICAL
+            </option>
+            <option value="ERROR" {% if history_level == "ERROR" %}selected{% endif %}>
+                ERROR
+            </option>
+            <option value="WARNING" {% if history_level == "WARNING" %}selected{% endif %}>
+                WARNING
+            </option>
+            <option value="INFO" {% if history_level == "INFO" %}selected{% endif %}>
+                INFO
+            </option>
+            <option value="DEBUG" {% if history_level == "DEBUG" %}selected{% endif %}>
+                DEBUG
+            </option>
+            <option value="TRACE" {% if history_level == "TRACE" %}selected{% endif %}>
+                TRACE
+            </option>
+        </select>
+        
         <button type="submit">Filter</button>
+        <a href="{{ url_for('filter_history') }}" class="action-button reset-button">Reset</a>
+            
     </form>    
 
     <h2>History Chart</h2>
@@ -214,7 +241,7 @@
         {% for value in chart_values %}
             <div class="chart-row">
                 <span>{{ chart_labels[loop.index0] }}</span>
-                <div class="chart-bar" styles="width: {{ value * 30 }}px;">
+                <div class="chart-bar" style="width: {{ value * 30 }}px;">
                     {{ value }}
                 </div>
             </div>
@@ -264,6 +291,10 @@
         </select>
 
         <input type="hidden" name="history_search" value="{{ history_search }}">
+        <input type="hidden" name="history_from" value="{{ history_from }}">
+        <input type="hidden" name="history_to" value="{{ history_to }}">
+        <input type="hidden" name="history_level" value="{{ history_level }}">
+
         <button type="submit">Apply Sort</button>
     </form>
 
@@ -360,6 +391,7 @@
             Filtered CSV
         </a>
         <a href="/download-history-excel">History Excel</a>
+        <a href="/download-backup">Backup JSON</a>
         <a href="/download-stats">Stats JSON</a>
         <a href="/download-stats-csv">Stats CSV</a>
         <a href="/download-stats-excel">Stats Excel</a>
