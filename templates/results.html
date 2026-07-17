@@ -288,6 +288,15 @@
             <option value="oldest" {% if history_sort == "oldest" %}selected{% endif %}>Oldest first</option>
             <option value="matches_high" {% if history_sort == "matches_high" %}selected{% endif %}>Most matches</option>
             <option value="matches_low" {% if history_sort == "matches_low" %}selected{% endif %}>Fewest matches</option>
+            <option value="keyword_asc"
+                {% if history_sort == "keyword_asc" %}selected{% endif %}>
+                Kerword (A-Z)
+            </option>
+
+            <option value="keyword_desc"
+                {% if history_sort == "keyword_desc" %}selected{% endif %}>
+                Keyword (Z-A)
+            </option>
         </select>
 
         <input type="hidden" name="history_search" value="{{ history_search }}">
@@ -301,7 +310,11 @@
     <table border="1" cellpadding="6">
         <tr>
             <th>#</th>
-            <th>Keyword</th>
+            <th>
+                <a href="/filter-history?history_sort=keyword_asc&history_search={{ history_search }}&history_from={{ history_from }}&history_to={{ history_to }}&history_level={{ history_level }}">
+                    Keyword
+                </a>
+            </th>
             <th>Levels</th>
             <th>Matches</th>
             <th>Searched At</th>

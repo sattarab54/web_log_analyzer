@@ -529,7 +529,47 @@ def filter_history():
             display_history,
             key=lambda item: item.get("searched_at", "")
         )
+
+    elif history_sort == "keyword_asc":
+        real_keywords = [
+            item for item in display_history
+            if item.get("keyword", "").strip()
+            and item.get("keyword", "").strip().lower() !="not set"
+        ]
     
+        missing_keywords = [
+            item for item in display_history
+            if not item.get("keyword", "").strip()
+            or item.get("keyword", "").strip().lower() == "not set"
+        ]
+
+        real_keywords = sorted(
+            real_keywords,
+            key=lambda item: item.get("keyword", "").strip().lower(),
+        )
+        display_history = real_keywords + missing_keywords
+
+    elif history_sort == "keyword_desc":
+        real_keywords = [
+            item for item in display_history
+            if item.get("keyword", "").strip()
+            and item.get("keyword", "").strip().lower() != "not set"
+        ]
+
+        missing_keywords = [
+            item for item in display_history
+            if not item.get("keyword", "").strip()
+            or item.get("keyword", "").strip().lower() == "not set"
+        ]
+
+        real_keywords = sorted(
+            real_keywords,
+            key=lambda item: item.get("keyword", "").strip().lower(),
+            reverse=True
+        )
+
+        display_history = real_keywords + missing_keywords
+        
     elif history_sort == "matches_high": 
         display_history = sorted(
             display_history,
