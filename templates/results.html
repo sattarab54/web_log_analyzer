@@ -311,7 +311,7 @@
         <tr>
             <th>#</th>
             <th>
-                <a href="/filter-history?history_sort=keyword_asc&history_search={{ history_search }}&history_from={{ history_from }}&history_to={{ history_to }}&history_level={{ history_level }}">
+                <a href="/filter-history?history_sort={% if history_sort == 'keyword_asc' %}keyword_desc{% else %}keyword_asc{% endif %}&history_search={{ history_search }}&history_from={{ history_from }}&history_to={{ history_to }}&history_level={{ history_level }}">
                     Keyword
                 </a>
             </th>
