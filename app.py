@@ -569,7 +569,52 @@ def filter_history():
         )
 
         display_history = real_keywords + missing_keywords
-        
+
+    elif history_sort == "levels_high":
+        severity_order = {
+            "CRITICAL": 0,
+            "ERROR": 1,
+            "WARNING": 2,
+            "INFO": 3,
+            "DEBUG": 4,
+            "TRACE": 5,
+        }
+
+        display_history = sorted(
+            display_history,
+            key=lambda item: min(
+                (
+                    severity_order[level]
+                    for level in severity_order
+                    if level in item.get("levels", "")
+                ),
+                default=99,
+            ),
+        )
+
+    elif history_sort == "levels_low":
+        severity_order = {
+            "CRITICAL": 0,
+            "ERROR": 1,
+            "WARNING": 2,
+            "INFO": 3,
+            "DEBUG": 4,
+            "TRACE": 5,
+        }
+
+        display_history = sorted(
+            display_history,
+            key=lambda item: min(
+                (
+                    severity_order[level]
+                    for level in severity_order
+                    if level in item.get("levels", "")
+                ),
+                default=99,
+            ),
+            reverse=True,
+        )
+                                
     elif history_sort == "matches_high": 
         display_history = sorted(
             display_history,

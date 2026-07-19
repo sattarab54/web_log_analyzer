@@ -286,8 +286,26 @@
         <select name="history_sort">
             <option value="newest" {% if history_sort == "newest" %}selected{% endif %}>Newest first</option>
             <option value="oldest" {% if history_sort == "oldest" %}selected{% endif %}>Oldest first</option>
-            <option value="matches_high" {% if history_sort == "matches_high" %}selected{% endif %}>Most matches</option>
-            <option value="matches_low" {% if history_sort == "matches_low" %}selected{% endif %}>Fewest matches</option>
+            <option value="matches_high"
+                {% if history_sort == "matches_high" %}selected{% endif %}>
+                Most matches
+            </option>
+
+            <option value="matches_low"
+                {% if history_sort == "matches_low" %}selected{% endif %}>
+                Fewest matches
+            </option>
+
+            <option value="levels_high"
+                {% if history_sort == "levels_high" %}selected{% endif %}>
+                Levels high to low
+            </option>
+
+            <option value="levels_low"
+                {% if history_sort == "levels_low" %}selected{% endif %}>
+                Levels low to high
+            </option>
+                
             <option value="keyword_asc"
                 {% if history_sort == "keyword_asc" %}selected{% endif %}>
                 Kerword (A-Z)
@@ -315,13 +333,25 @@
                     Keyword
                 </a>
             </th>
-            <th>Levels</th>
-            <th>Matches</th>
-            <th>Searched At</th>
+            <th>
+                <a href="/filter-history?history_sort={% if history_sort == 'levels_high' %}levels_low{% else %}levels_high{% endif %}&history_search={{ history_search }}&history_from={{ history_from }}&history_to={{ history_to }}&history_level={{ history_level }}">
+                    Levels
+                </a>
+            </th>                                  
+            <th>
+                <a href="/filter-history?history_sort={% if history_sort == 'matches_high' %}matches_low{% else %}matches_high{% endif %}&history_seach={{ history_search }}&history_from={{ history_from }}&history_to={{ history_to }}&history_level={{ history_level }}">
+                    Matches
+                </a>
+            </th>
+            <th>
+                <a href="/filter-history?history_sort={% if history_sort == 'newest' %}oldest{% else %}newest{% endif %}&history_search={{ history_search }}&history_from={{ history_from }}&history_to={{ history_to }}&history_level={{ history_level }}">
+                    Searched At
+                </a>
+            </th>                                             
             <th>Action</th>
         </tr>
 
-        {% for item in display_history %}
+        {% for item in display_history %}                                                                                                                                                                                                                                        
         <tr>
             <td>{{ loop.index}}</td>
             <td>{{ item.keyword or "Not set" }}</td>
