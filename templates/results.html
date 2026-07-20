@@ -330,22 +330,22 @@
             <th>#</th>
             <th>
                 <a href="/filter-history?history_sort={% if history_sort == 'keyword_asc' %}keyword_desc{% else %}keyword_asc{% endif %}&history_search={{ history_search }}&history_from={{ history_from }}&history_to={{ history_to }}&history_level={{ history_level }}">
-                    Keyword
+                    Keyword{% if history_sort == "keyword_asc" %}▲{% elif history_sort == "keyword_desc" %}▼{% endif %}                                                                                    
                 </a>
             </th>
             <th>
                 <a href="/filter-history?history_sort={% if history_sort == 'levels_high' %}levels_low{% else %}levels_high{% endif %}&history_search={{ history_search }}&history_from={{ history_from }}&history_to={{ history_to }}&history_level={{ history_level }}">
-                    Levels
+                    Levels{% if history_sort == "levels_high" %}▼{% elif history_sort == "levels_low" %}▲{% endif %}
                 </a>
             </th>                                  
             <th>
                 <a href="/filter-history?history_sort={% if history_sort == 'matches_high' %}matches_low{% else %}matches_high{% endif %}&history_seach={{ history_search }}&history_from={{ history_from }}&history_to={{ history_to }}&history_level={{ history_level }}">
-                    Matches
+                    Matches{% if history_sort == "matches_high" %}▼{% elif history_sort == "matches_low" %}▲{% endif %}
                 </a>
             </th>
             <th>
                 <a href="/filter-history?history_sort={% if history_sort == 'newest' %}oldest{% else %}newest{% endif %}&history_search={{ history_search }}&history_from={{ history_from }}&history_to={{ history_to }}&history_level={{ history_level }}">
-                    Searched At
+                    Searched At{% if history_sort == "newest" %}▼{% elif history_sort == "oldest" %}▲{% endif %}
                 </a>
             </th>                                             
             <th>Action</th>
