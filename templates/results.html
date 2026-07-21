@@ -328,22 +328,22 @@
     <table border="1" cellpadding="6">
         <tr>
             <th>#</th>
-            <th>
+            <th class="{% if history_sort in ['keyword_asc', 'keyword_desc'] %}active-sort{% endif %}">                                    
                 <a href="/filter-history?history_sort={% if history_sort == 'keyword_asc' %}keyword_desc{% else %}keyword_asc{% endif %}&history_search={{ history_search }}&history_from={{ history_from }}&history_to={{ history_to }}&history_level={{ history_level }}">
                     Keyword{% if history_sort == "keyword_asc" %}▲{% elif history_sort == "keyword_desc" %}▼{% endif %}                                                                                    
                 </a>
             </th>
-            <th>
+            <th class="{% if history_sort in ['levels_high', 'levels_low'] %}active-sort{% endif %}">
                 <a href="/filter-history?history_sort={% if history_sort == 'levels_high' %}levels_low{% else %}levels_high{% endif %}&history_search={{ history_search }}&history_from={{ history_from }}&history_to={{ history_to }}&history_level={{ history_level }}">
                     Levels{% if history_sort == "levels_high" %}▼{% elif history_sort == "levels_low" %}▲{% endif %}
                 </a>
             </th>                                  
-            <th>
+            <th class="{% if history_sort in ['matches_high', 'matches_low'] %}active-sort{% endif %}">
                 <a href="/filter-history?history_sort={% if history_sort == 'matches_high' %}matches_low{% else %}matches_high{% endif %}&history_seach={{ history_search }}&history_from={{ history_from }}&history_to={{ history_to }}&history_level={{ history_level }}">
                     Matches{% if history_sort == "matches_high" %}▼{% elif history_sort == "matches_low" %}▲{% endif %}
                 </a>
             </th>
-            <th>
+            <th class="{% if history_sort in ['newest', 'oldest'] %}active-sort{% endif %}">
                 <a href="/filter-history?history_sort={% if history_sort == 'newest' %}oldest{% else %}newest{% endif %}&history_search={{ history_search }}&history_from={{ history_from }}&history_to={{ history_to }}&history_level={{ history_level }}">
                     Searched At{% if history_sort == "newest" %}▼{% elif history_sort == "oldest" %}▲{% endif %}
                 </a>

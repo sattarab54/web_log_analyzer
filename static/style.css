@@ -257,6 +257,12 @@ pre {
     font-weight: bold;
 }
 
+.active-sort {
+    background-color: #bfdbfe;
+    font-weight: bold;
+    transition: background-color 0.2s ease;
+}
+
 
 
 
