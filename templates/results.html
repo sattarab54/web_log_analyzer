@@ -278,6 +278,24 @@
             <p>Last Visible Search</p>
         </div>
 
+    <h2>Visible History Levels</h2>
+
+    <div class="history-level-summary">
+        <strong>Visible Levels:</strong>
+        CRITICAL: {{ visible_level_counts.CRITICAL }}
+        |
+        ERROR: {{ visible_level_counts.ERROR }}
+        |
+        WARNING: {{ visible_level_counts.WARNING }}
+        |
+        INFO: {{ visible_level_counts.INFO }}
+        |
+        DEBUG: {{ visible_level_counts.DEBUG }}
+        |
+        TRACE: {{ visible_level_counts.TRACE }}
+    </div>
+        
+
     <h2>Analysis History</h2>
     
     {% if display_history %}

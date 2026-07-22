@@ -330,6 +330,23 @@ def index():
 
             chart_labels.append(label)
             chart_values.append(item.get("matches", 0))
+
+        visible_level_counts = {
+            "CRITICAL": 0,
+            "ERROR": 0,
+            "WARNING": 0,
+            "INFO": 0,
+            "DEBUG": 0,
+            "TRACE": 0,
+        }
+
+        for item in display_history:
+            item_levels = item.get("levels", "")
+
+            for level in visible_level_counts:
+                if level in item_levels:
+                    visible_level_counts[level] +=1
+
                                         
         return render_template(
             "results.html",
@@ -358,6 +375,7 @@ def index():
             last_search_time=last_search_time,
             level_stats=level_stats,
             history_sort=history_sort,
+            visible_level_counts=visible_level_counts,
             chart_labels=chart_labels,
             chart_values=chart_values,
         )
@@ -436,6 +454,22 @@ def view_history(index):
             )
 
         display_history = history
+
+    visible_level_counts = {
+        "CRITICAL": 0,
+        "ERROR": 0,
+        "WARNING": 0,
+        "INFO": 0,
+        "DEBUG": 0,
+        "TRACE": 0,
+    }
+
+    for item in display_history:
+        item_levels = item.get("levels", "")
+
+        for level in visible_level_counts:
+            if level in item_levels:
+                visible_level_counts[level] +=1
         
     return render_template(
         "results.html",
@@ -464,6 +498,7 @@ def view_history(index):
         last_search_time=item.get("searched_at", ""),
         level_stats=level_stats,
         most_keyword=most_keyword,
+        visible_level_counts=visible_level_counts,
         
         chart_labels=chart_labels,
         chart_values=chart_values,
@@ -729,6 +764,22 @@ def filter_history():
             key=keyword_counts.get
         )
 
+    visible_level_counts = {
+        "CRITICAL": 0,
+        "ERROR": 0,
+        "WARNING": 0,
+        "INFO": 0,
+        "DEBUG": 0,
+        "TRACE": 0,
+    }
+
+    for item in display_history:
+        item_levels = item.get("levels", "")
+
+        for level in visible_level_counts:
+            if level in item_levels:
+                visible_level_counts[level] +=1
+
     return render_template(
         "results.html",
         keyword="",
@@ -751,6 +802,7 @@ def filter_history():
         history_from=history_from,
         history_to=history_to,
         history_level=history_level,
+        visible_level_counts=visible_level_counts,
         total_searches=len(stats_history),
         successful_searches=sum(1 for item in stats_history if item["matches"] > 0),
         visible_total_searches=visible_total_searches,
