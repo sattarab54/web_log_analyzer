@@ -32,7 +32,6 @@
         <li>DEBUG: {{ summary["DEBUG"] }}</li>
         <li>TRACE: {{ summary["TRACE"] }}</li>
     <ul>
-
     
     {% if source_name == "History filter" %}
         <h2>Current Analysis</h2>
@@ -343,6 +342,20 @@
         <button type="submit">Apply Sort</button>
     </form>
 
+    <a href="/export-history-csv?history_sort={{ history_sort }}&history_search={{ history_search }}&history_from={{ history_from }}&history_to={{ history_to }}&history_level={{ history_level }}">  
+        <button type="button" class="export-button">Export CSV</button>
+    </a>
+
+    <a href="/export-history-xlsx?history_sort={{ history_sort }}&history_search={{ history_search }}&history_from={{ history_from }}&history_to={{ history_to }}&history_level={{ history_level }}">
+        <button typee="button" class="excel-button">Export Excel</button>
+    </a>
+
+    <form action="/clear-history" method="POST" style="display:inline;">
+        <button type="submit" class="action-button clear-button">
+            Clear History
+        </button>
+    </form>
+    
     <table border="1" cellpadding="6">
         <tr>
             <th>#</th>
@@ -390,11 +403,7 @@
         </tr>
         {% endfor %}
         <br>
-        <form action="/clear-history" method="POST">
-            <button type="submit" class="action-button clear-button">                                                                                                                                                            
-                Clear History
-            </button>
-        </form>
+                                                                                                                                                                                                                    
     </table>
 
     {% if total_pages > 1 %}

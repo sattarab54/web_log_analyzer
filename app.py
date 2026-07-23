@@ -1,5 +1,5 @@
 
-from flask import Flask, render_template, request, send_file, redirect
+from flask import Flask, render_template, request, send_file, redirect, Response
 from utils import load_history, save_history
 from markupsafe import Markup
 from io import BytesIO, StringIO
@@ -858,30 +858,118 @@ def download_backup():
     )
 
 @app.route("/download-history-csv")
+@app.route("/export-history-csv")
 def download_history_csv():
-    file_data = BytesIO()
+    history_sort = request.args.get("history_sort", "newest")
+    history_search = request.args.get("history_serach", "").strip().lower()
+    history_from = request.args.get("history_from", "").strip()
+    history_to = request.args.get("history_to", "").strip()
+    history_level = request.args.get("history_level", "").strip()
 
-    rows = ["Keyword,Levels,Matches,Searched At"]
+    export_history = list(history)
 
-    for item in history:
-        rows.append(
-            f'"{item.get("keyword", "")}",'
-            f'"{item.get("levels", "")}",'
-            f'"{item.get("matches", "")}",'
-            f'"{item.get("searched_at", "")}",'
+    if history_search:
+        export_history = [
+            item
+            for item in export_history
+            if history_search in item .get("keyword", "").lower()
+        ]
+
+    if history_from:
+        export_history = [
+            item
+            for item in export_history
+            if item .get("searched_at", "")[:10] >= history_from
+        ]
+
+    if history_to:
+        export_history = [
+            item
+            for item in export_history
+            if item .get("searched_at", "")[:10] <= history_to
+        ]
+    if history_level:
+        export_history = [
+            item
+            for item in export_history
+            if history_level in item.get("levels", "")
+        ]
+    severity_order = {
+        "CRITICAL": 0,
+        "ERROR": 1,
+        "WARNING": 2,
+        "INFO": 3,
+        "DEBUG": 4,
+        "TRACE": 5,
+    }
+
+    if history_sort == "oldest":
+        export_history.sort(key=lambda item: item.get("searched_at", ""))
+
+    elif history_sort == "newest":
+        export_history.sort(
+            key=lambda item: item.get("searced_at", ""),
+            reverse=True,
         )
 
-    text_stream = "\n".join(rows)
+    elif history_sort == "matches_low":
+        export_history.sort(
+            key=lambda item: int(item.get("matches", 0) or 0)
+        )
 
-    file_data.write(text_stream.encode("utf-8"))
+    elif history_sort == "matches_high":
+        export_history.sort(
+            key=lambda item: int(item.get("matches", 0) or 0),
+            reverse=True,
+        )
+
+    elif history_sort == "keyword_asc":
+        export_history.sort(
+            key=lambda item: item.get("keyword", "").lower()
+        )
+
+    elif history_sort == "keyword_desc":
+        export_history.sort(
+            key=lambda item: item.get("keyword", "").lower(),
+            reverse=True
+        )
+
+    elif history_sort in ("levels_high", "levels_low"):
+        export_history.sort(
+            key=lambda item: min(
+                (
+                    severity_order[level]
+                    for level in severity_order
+                    if level in item.get("levels", "")
+                ),
+                default=99,
+            ),
+            reverse=(history_sort == "levels_low"),
+        )
+
+    text_stream = StringIO()
+    writer = csv.writer(text_stream)
+
+    writer.writerow(["Keword", "Levels", "Matches", "Searched At"])
+    for item in export_history:
+        writer.writerow(
+            [
+                item.get("keyword", ""),
+                item.get("levels", ""),
+                item.get("matches", 0),
+                item.get("searched_at", ""),
+            ]
+        )
+
+    file_data = BytesIO(text_stream.getvalue().encode("utf-8-sig"))
     file_data.seek(0)
 
     return send_file(
         file_data,
         as_attachment=True,
-        download_name="history.csv",
-        mimetype="text/csv"
-    )
+        download_name="filtered_history.csv",
+        mimetype="text/csv",
+    )                        
 
 @app.route("/download-csv")
 def download_csv():
@@ -1393,18 +1481,21 @@ def download_history_excel():
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
+@app.route("/export-history-xlsx")
 @app.route("/download-filtered-history-excel")
 def download_filtered_history_excel():
     history_search = request.args.get("history_search", "")
     history_sort = request.args.get("history_sort", "newest")
     history_from = request.args.get("history_from", "")
     history_to = request.args.get("history_to", "")
+    history_level = request.args.get("history_level", "")
 
-    display_history = history
+    display_history = list(history)
 
     if history_search:
         display_history = [
-            item for item in history
+            item
+            for item in disply_history
             if (
                 history_search.lower() in item.get("keyword", "").lower()
                 or history_search.lower() in item.get("levels", "").lower()
@@ -1422,20 +1513,69 @@ def download_filtered_history_excel():
             item for item in display_history
             if item.get("searched_at", "")[:10] <= history_to
         ]
+
+    if history_level:
+        display_history = [
+            item
+            for item in display_history
+            if history_level in item.get("levels", "")
+        ]
+
+    severity_order = { 
+        "CRITICAL": 0,
+        "ERROR": 1,
+        "WARNING": 2,
+        "INFO": 3,
+        "DEBUG": 4,
+        "TRACE": 5,
+    }
                                             
     if history_sort == "newest":
-        display_history = list(reversed(display_history))
+        display_history.sort(
+            key=lambda item: item.get("searched_at", ""),
+            reverse=True,
+        )
 
     elif history_sort == "oldest":
-        display_history = display_history
+        display_history.sort(
+            key=lambda item: item.get("searched_at", "")
+        )
 
-    elif history_sort == "keyword":
-        display_history = sorted(
-            display_history,
+    elif history_sort == "matches_high":
+        display_history.sort(
+            key=lambda item: int(item.get("matches", 0) or 0),
+            reverse=True,
+        )
+
+    elif history_sort == "matches_low":
+        display_history.sort(
+            key=lambda item: int(item.get("matches", 0) or 0)
+        )
+
+    elif history_sort == "keyword_asc":
+        display_history.sort(
             key=lambda item: item.get("keyword", "").lower()
         )
 
-    # return "Filtered Excel route ready"
+    elif history_sort == "keyword_desc":
+        display_history.sort(
+            key=lambda item: item.get("keyword", "").lower(),
+            reverse=True,
+        )
+
+    elif history_sort in ("levels_high", "levels_low"):
+        display_history.sort(
+            key=lambda item: min(
+                (
+                    severity_order[level]
+                    for level in severity_order
+                    if level in item.get("levels", "")
+                ),
+                default=99,
+            ),
+            reverse=(history_sort == "levels_low"),
+        )
+                            
     workbook = Workbook()
     sheet = workbook.active
     sheet.title = "Filtered History"

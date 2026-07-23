@@ -263,6 +263,34 @@ pre {
     transition: background-color 0.2s ease;
 }
 
+.export-button {
+    background-color: #198754;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 4px;
+    font-weight: bold;
+    curser: pointer;
+}
+
+.export-button:hover {
+    background-color: #157347;
+}
+
+.excel-button {
+    background-color: #217346;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 4px;
+    font-weight: bold;
+    curser: pointer;
+}
+
+.excel-button:hover {
+    background-color: #185c37;
+}
+
 
 
 
