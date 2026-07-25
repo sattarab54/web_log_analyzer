@@ -1612,10 +1612,110 @@ def download_filtered_history_excel():
         )
     sheet.freeze_panes = "A2"
     sheet.auto_filter.ref = sheet.dimensions
+
+    summary_sheet = workbook.create_sheet("Summary")
+    summary_sheet.freeze_panes = "A2"
+
+    summary_sheet.append(["Summary Metric", "Value"])
+
+    for cell in summary_sheet[1]:
+        cell.font = Font(bold=True)
+        cell.fill = PatternFill(
+            fill_type="solid",
+            start_color="D9EAD3",
+            end_color="D9EAD3",
+        )
+
+    summary_sheet.append(["Total searches", len(display_history)])
+
+    summary_sheet.append([
+        "Successful searches",
+        sum(
+            1
+            for item in display_history
+            if item.get("matches", 0) > 0
+        ),
+    ])
+
+    summary_sheet.append([
+        "Total matches found",
+        sum(
+            int(item.get("matches", 0) or 0)
+            for item in display_history
+        ),
+    ])
+
+    total_matches = sum(
+        int(item.get("matches", 0) or 0)
+        for item in display_history
+    )
+
+    average_matches = (
+        round(total_matches / len(display_history), 2)
+        if display_history else 0
+    )
+    
+    summary_sheet.append([
+        "Average matches per search",
+        average_matches
+    ])
+
+    most_keyword = "N/A"
+
+    if display_history:
+        keyword_counts = {}
+
+        for item in display_history:
+            key = item.get("keyword", "").strip()
+            if not key:
+                key = "Not set"
+            keyword_counts[key] = keyword_counts.get(key, 0) + 1
+
+        most_keyword = max(
+            keyword_counts,
+            key=keyword_counts.get,
+            default="N/A"
+        )
+
+    summary_sheet.append([
+        "Most searched keyword",
+        most_keyword
+    ])
+
+    most_common_level = "N/A"
+
+    if display_history:
+        level_counts = {
+            "CRIRICAL": 0,
+            "ERROR": 0,
+            "WARNING": 0,
+            "INFO": 0,
+            "DEBUG": 0,
+            "TRACE": 0,
+        }
+
+        for item in display_history:
+            level_text = item.get("levels", "")
+
+            for level in level_counts:
+                if level in level_text:
+                    level_counts[level] +=1
+        most_common_level = max(
+            level_counts,
+            key=level_counts.get,
+            default = "N/A",
+        )
+    summary_sheet.append([
+        "Most common log level",
+        most_common_level,
+    ])
+
+    summary_sheet.column_dimensions["A"].width = 35
+    summary_sheet.column_dimensions["B"].width = 20
             
     file_data = BytesIO()
     workbook.save(file_data)
-    file_data.seek(0)
+    file_data.seek(0) 
 
     return send_file(
         file_data,
