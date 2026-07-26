@@ -1660,6 +1660,46 @@ def download_filtered_history_excel():
         average_matches
     ])
 
+    highest_matches = max(
+        (
+            int(item.get("matches", 0) or 0)
+            for item in display_history
+        ),
+        default=0,
+    )
+
+    summary_sheet.append([
+        "Highest matches in one search",
+        highest_matches,
+    ])
+
+    earliest_search = min(
+        (
+            item.get("searched_at", "")
+            for item in display_history
+            if item.get("searched_at")
+        ),
+        default="N/A",
+    )
+
+    summary_sheet.append([
+        "Earliest search",
+        earliest_search,
+    ])
+
+    latest_search = max(
+        (
+            item.get("searched_at", "")
+            for item in display_history
+            if item .get("searched_at")
+        ),
+        default="N/A",
+    )
+    summary_sheet.append([
+        "Latest search",
+        latest_search,
+    ])
+
     most_keyword = "N/A"
 
     if display_history:
@@ -1710,8 +1750,11 @@ def download_filtered_history_excel():
         most_common_level,
     ])
 
-    summary_sheet.column_dimensions["A"].width = 35
-    summary_sheet.column_dimensions["B"].width = 20
+    summary_sheet.column_dimensions["A"].width = 28
+    summary_sheet.column_dimensions["B"].width = 27
+
+    for cell in summary_sheet["B"]:
+        cell.alignment = Alignment(horizontal="center")
             
     file_data = BytesIO()
     workbook.save(file_data)
