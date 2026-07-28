@@ -7,6 +7,8 @@ from datetime import datetime
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 from openpyxl.styles import Font, PatternFill, Alignment
+from openpyxl.chart import BarChart, PieChart, Reference
+from openpyxl.chart.label import DataLabelList
 import re
 import csv
 import json
@@ -1726,7 +1728,7 @@ def download_filtered_history_excel():
 
     if display_history:
         level_counts = {
-            "CRIRICAL": 0,
+            "CRITICAL": 0,
             "ERROR": 0,
             "WARNING": 0,
             "INFO": 0,
@@ -1739,7 +1741,7 @@ def download_filtered_history_excel():
 
             for level in level_counts:
                 if level in level_text:
-                    level_counts[level] +=1
+                    level_counts[level] += 1
         most_common_level = max(
             level_counts,
             key=level_counts.get,
@@ -1755,6 +1757,91 @@ def download_filtered_history_excel():
 
     for cell in summary_sheet["B"]:
         cell.alignment = Alignment(horizontal="center")
+
+    charts_sheet = workbook.create_sheet("Charts")
+    charts_sheet.append(["Log_level", "Count"])
+
+    for cell in charts_sheet[1]:
+        cell.font = Font(bold=True)
+        cell.fill = PatternFill(
+            fill_type="solid",
+            start_color="D9EAD3",
+            end_color="D9EAD3",
+        )
+
+    for level in [
+        "CRITICAL",
+        "ERROR",
+        "WARNING",
+        "INFO",
+        "DEBUG",
+        "TRACE",
+    ]:
+        if history_level:
+            count = len(display_history) if level == history_level else 0
+        else:
+            count = level_counts.get(level, 0)
+
+        charts_sheet.append([
+            level,
+            count,
+        ])
+
+    charts_sheet.column_dimensions["A"].width = 15
+    charts_sheet.column_dimensions["B"].width = 12
+
+    bar_chart = BarChart()
+    bar_chart.type = "col"
+    bar_chart.style = 10
+    bar_chart.title = "Log Level Counts"            
+    bar_chart.legend = None
+    bar_chart.varyColors = False
+
+    data = Reference(
+        worksheet=charts_sheet,
+        min_col=2,
+        min_row=1,
+        max_row=7,
+    )
+
+    categories = Reference(
+        worksheet=charts_sheet,
+        min_col=1,
+        min_row=2,
+        max_row=7,
+    )
+
+    bar_chart.add_data(
+        data,
+        titles_from_data=True,
+    )
+
+    bar_chart.set_categories(categories)
+
+    bar_chart.x_axis.delete = False
+    bar_chart.x_axis.tickLblPos = "nextTo" 
+    
+
+    bar_chart.dLbls = DataLabelList()
+    bar_chart.dLbls.showVal = True
+    bar_chart.dLbls.showCatName = False
+    bar_chart.dLbls.showSerName = False
+    bar_chart.dLbls.showLegendKey = False
+    bar_chart.dLbls.dLblPos = "outEnd"
+
+    highest_level_count = max(
+        level_counts.values(),
+        default=0,
+    )
+
+    bar_chart.y_axis.scaling.min =0
+    bar_chart.y_axis.scaling.max = highest_level_count + 5
+    bar_chart.y_axis.majorUnit = 5
+    
+    bar_chart.height = 8
+    bar_chart.width = 14
+
+    charts_sheet.add_chart(bar_chart, "D2")
             
     file_data = BytesIO()
     workbook.save(file_data)
