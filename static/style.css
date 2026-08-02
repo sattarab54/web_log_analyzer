@@ -291,6 +291,38 @@ pre {
     background-color: #185c37;
 }
 
+.pdf-button {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 4px;
+    font-weight: bold;
+    curser: pointer;
+}
+
+.pdf-button:hover {
+    background-color: #bb2d3b;
+}
+
+.export-button,
+.excel-button,
+.pdf-button,
+.clear-button {
+    margin-right: 8px;
+}
+
+.export-actions {
+    display: flex;
+    gap: 16px;
+    margin-top: 18px;
+    margin-bottom: 18px;
+}
+.clear-history-row {
+    margin-top: 16px;
+    margin-bottom: 18px;
+}
+
 
 
 

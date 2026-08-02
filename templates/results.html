@@ -342,6 +342,8 @@
         <button type="submit">Apply Sort</button>
     </form>
 
+<div class="export-actions">
+
     <a href="/export-history-csv?history_sort={{ history_sort }}&history_search={{ history_search }}&history_from={{ history_from }}&history_to={{ history_to }}&history_level={{ history_level }}">  
         <button type="button" class="export-button">Export CSV</button>
     </a>
@@ -350,11 +352,21 @@
         <button typee="button" class="excel-button">Export Excel</button>
     </a>
 
-    <form action="/clear-history" method="POST" style="display:inline;">
+    <a href="/export-history-pdf?history_sort={{ history_sort }}&history_search={{ history_search }}&history_from={{ history_from }}&history_to={{ history_to }}&history_level={{ history_level }}">
+        <button type="button" class="pdf-button">Download PDF</button>
+    </a>
+
+</div>
+
+<div class="clear-history-row">
+    
+    <form action="/clear-history" method="POST">
         <button type="submit" class="action-button clear-button">
             Clear History
         </button>
     </form>
+
+</div>
     
     <table border="1" cellpadding="6">
         <tr>

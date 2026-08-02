@@ -12,9 +12,15 @@ from openpyxl.chart.label import DataLabelList
 import re
 import csv
 import json
-from reportlab.platypus import SimpleDocTemplate, Paragraph
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Paragraph,
+    Table,
+    TableStyle,
+)
 from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.lib.colors import red, darkred, orange, blue, green, gray
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
 
 app = Flask(__name__)
 
@@ -1853,6 +1859,133 @@ def download_filtered_history_excel():
         download_name="filtered_history.xlsx",
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+
+@app.route("/export-history-pdf")
+def export_history_pdf():
+    file_data = BytesIO()
+
+    history_search = request.args.get("history_search", "")
+    history_sort = request.args.get("history_sort", "newest")
+    history_from = request.args.get("history_from", "")
+    history_to = request.args.get("history_to", "")
+    history_level = request.args.get("history_level", "")
+
+    display_history = list(history)
+
+    if history_search:
+        display_history = [
+            item
+            for item in display_history
+            if history_search.lower() in item.get("keyword", "").lower()
+        ]
+
+    if history_level:
+        display_history = [
+            item
+            for item in display_history
+            if history_level.upper()
+            in item.get("levels", "").upper()
+        ]
+
+    if history_from:
+        display_history = [
+            item
+            for item in display_history
+            if item.get("searched_at", "") >= history_from
+        ]
+
+    if history_to:
+        display_history = [
+            item
+            for item in display_history
+            if item.get("searched_at", "") <= history_to + " 23:59:59"
+        ]
+        
+    doc = SimpleDocTemplate(
+        file_data,
+        pagesize=letter,
+    )
+
+    styles = getSampleStyleSheet()
+
+    generated_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    total_visible_searches = len(display_history)
+    total_visible_matches = sum(
+        item["matches"] for item in display_history
+    )
+
+    average_matches = (
+        total_visible_matches / total_visible_searches
+        if total_visible_searches
+        else 0
+    )
+
+    search_times = [
+        item.get("searched_at", "")
+        for item in display_history
+        if item.get("searched_at", "")
+    ]
+
+    first_visible_search = min(search_times) if search_times else "N/A"
+    last_visible_search = max(search_times) if search_times else "N/A"
+
+    visible_levels = sorted(
+        {
+            level.strip()
+            for item in display_history
+            for level in item.get("levels", "").split(",")
+            if level.strip()
+        }
+    )
+
+    summary_data = [
+        ["Metric", "Value"],
+        ["Total Visible Searches", str(total_visible_searches)],
+        ["Unique Keywords", str(len(set(item["keyword"] for item in display_history)))],
+        ["Total Visible Matches", str(sum(item["matches"] for item in display_history))],
+        ["Average Matches per Search", f"{average_matches:.1f}"],
+        ["First Visible Search", first_visible_search],
+        ["Last Visible Search", last_visible_search],
+        ["Visible History Levels", ", ".join(visible_levels)],
+    ]
+
+    summary_table = Table(
+        summary_data,
+        colWidths=[200, 320],
+    )
+
+    summary_table.halign = "CENTER"
+
+    summary_table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.darkblue),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("GRID", (0, 0), (-1, -1), 1, colors.grey),
+        ("BACKGROUND", (0, 1), (-1, -1), colors.beige),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("FONTNAME", (0, 1), (0, -1), "Helvetica-Bold"),
+        ("BOTTOMPADDING", (0, 0), (-1, 0), 8),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+    ]))    
+
+    elements = [
+        Paragraph("Web Log Analyzer PDF Export", styles["Title"]),                                
+        Paragraph(f"Generated: {generated_at}", styles["Normal"]),                                
+        Paragraph("Summary", styles["Heading2"]),
+        summary_table,                
+    ]
+
+    doc.build(elements)
+
+    file_data.seek(0)
+
+    return send_file(
+        file_data,
+        as_attachment=True,
+        download_name="filtered_history.pdf",
+        mimetype="application/pdf",
+    )
+    
 
 @app.route("/download-filtered-history-csv")
 def download_filtered_history_csv():
