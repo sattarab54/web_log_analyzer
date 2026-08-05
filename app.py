@@ -523,6 +523,7 @@ def delete_history(index):
 @app.route("/filter-history")
 def filter_history():
     global latest_filtered_history
+    last_search_time = "N/A"
     history_search = request.args.get("history_search", "")
     history_sort = request.args.get("history_sort", "newest")
     history_from = request.args.get("history_from", "")
@@ -534,12 +535,9 @@ def filter_history():
     if history_search:
         search = history_search.lower()
         display_history = [
-            item for item in history
-            if (
-                search in item.get("keyword", "").lower()
-                or search in item.get("searched_at", "").lower()
-                or search in " ".join(item.get("results", [])).lower()
-            ) 
+            item
+            for item in history
+            if search in item.get("keyword", "").lower()                                                          
         ]
 
     if history_level:
@@ -688,9 +686,14 @@ def filter_history():
     visible_first_search = "N/A"
     visible_last_search = "N/A"
 
-    if stats_history:
-        visible_first_search = stats_history[0].get("searched_at") or "N/A"
-        visible_last_search = stats_history[-1].get("searched_at") or "N/A"
+    search_times = [
+        item.get("searched_at", "")
+        for item in stats_history
+        if item.get("searched_at", "")
+    ]
+    
+    visible_first_search = min(search_times) if search_times else "N/A"
+    visible_last_search = max(search_times) if search_times else "N/A"
                                              
     page = int(request.args.get("page", 1))
     per_page = 10
@@ -703,18 +706,22 @@ def filter_history():
     paged_history = display_history[start:end]
     latest_filtered_history = paged_history
 
-    chart_labels = []
-    chart_values = []
+    chart_counts = {}
 
-    for item in  display_history:
+    for item in display_history:
         label = item.get("keyword", "").strip()
 
         if not label:
             label = "Not set"
 
-        chart_labels.append(label)
-        chart_values.append(item.get("matches", 0))
+        chart_counts[label] = (
+            chart_counts.get(label, 0)
+            + item.get("matches", 0)
+        )
 
+    chart_labels = list(chart_counts.keys())
+    chart_values = list(chart_counts.values())            
+                                            
     level_stats = {
         "CRITICAL": 0,
         "ERROR": 0,
@@ -869,11 +876,13 @@ def download_backup():
 @app.route("/export-history-csv")
 def download_history_csv():
     history_sort = request.args.get("history_sort", "newest")
-    history_search = request.args.get("history_serach", "").strip().lower()
+    history_search = request.args.get(
+        "history_search", ""
+    ).strip().lower()        
     history_from = request.args.get("history_from", "").strip()
     history_to = request.args.get("history_to", "").strip()
     history_level = request.args.get("history_level", "").strip()
-
+        
     export_history = list(history)
 
     if history_search:

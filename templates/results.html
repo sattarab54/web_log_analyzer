@@ -186,7 +186,10 @@
         </div>
     </div>
 
-    <form action="/filter-history" method="GET">
+    <form id="history-chart"
+          action="{{ url_for('filter_history') }}#history-chart"
+          method="GET">
+
         <input type="text"
                name="history_search"
                placeholder="Search history"
@@ -228,11 +231,14 @@
                 TRACE
             </option>
         </select>
-        
+                        
         <button type="submit">Filter</button>
-        <a href="{{ url_for('filter_history') }}" class="action-button reset-button">Reset</a>
-            
-    </form>    
+
+        <a href="{{ url_for('filter_history') }}#history-chart"
+           class="action-button reset-button">
+            Reset
+        </a>                                    
+    </form>
 
     <h2>History Chart</h2>
 
@@ -343,8 +349,15 @@
     </form>
 
 <div class="export-actions">
-
-    <a href="/export-history-csv?history_sort={{ history_sort }}&history_search={{ history_search }}&history_from={{ history_from }}&history_to={{ history_to }}&history_level={{ history_level }}">  
+    
+    <a href="{{ url_for(
+        'download_history_csv',
+        history_sort=history_sort,
+        history_search=history_search,
+        history_from=history_from,
+        history_to=history_to,
+        history_level=history_level
+    ) }}">      
         <button type="button" class="export-button">Export CSV</button>
     </a>
 
