@@ -17,6 +17,7 @@ from reportlab.platypus import (
     Paragraph,
     Table,
     TableStyle,
+    Spacer,
 )
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import colors
@@ -1924,6 +1925,16 @@ def export_history_pdf():
         item["matches"] for item in display_history
     )
 
+    successful_searches = sum(
+        1 for item in display_history if item.get("matches", 0) > 0
+    )
+
+    success_rate = (
+        successful_searches / total_visible_searches * 100
+        if total_visible_searches
+        else 0
+    )
+
     average_matches = (
         total_visible_matches / total_visible_searches
         if total_visible_searches
@@ -1948,9 +1959,41 @@ def export_history_pdf():
         }
     )
 
+    keyword_counts = {}
+
+    for item in display_history:
+        keyword = item.get("keyword", "").strip()
+
+        if keyword and keyword.lower() !="not set":
+            keyword_counts[keyword] = keyword_counts.get(keyword, 0) + 1
+
+    top_keyword = (
+        max(keyword_counts, key=keyword_counts.get)
+        if keyword_counts
+        else "N/A"                                        
+    )
+
+    larest_item = max(
+        display_history,
+        key=lambda item: item.get("searched_at", "")
+    ) if display_history else None 
+
+    latest_keyword = (
+        display_history[-1].get("keyword", "N/A")
+        if display_history
+        else "N/A"
+    )
+
+    if not latest_keyword:
+        latest_keyword = "Not set"
+
     summary_data = [
         ["Metric", "Value"],
         ["Total Visible Searches", str(total_visible_searches)],
+        ["Successful Searches", str(successful_searches)],
+        ["Success Rate", f"{success_rate:.0f}%"],
+        ["Top Keyword", top_keyword],
+        ["Latest Keyword", latest_keyword],
         ["Unique Keywords", str(len(set(item["keyword"] for item in display_history)))],
         ["Total Visible Matches", str(sum(item["matches"] for item in display_history))],
         ["Average Matches per Search", f"{average_matches:.1f}"],
@@ -1975,11 +2018,37 @@ def export_history_pdf():
         ("FONTNAME", (0, 1), (0, -1), "Helvetica-Bold"),
         ("BOTTOMPADDING", (0, 0), (-1, 0), 8),
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-    ]))    
+    ]))
+
+    filters_data = [
+        ["Filter", "Value"],
+        ["Keyword", history_search or "All"],
+        ["Level", history_level or "All Levels"],
+        ["From Date", history_from or "Not set"],
+        ["To Date", history_to or "Not set"],
+        ["Sort Order", history_sort.replace("_", " ").title()],
+    ]
+
+    filters_table = Table(
+        filters_data,
+        colWidths=[150, 370],
+    )
+
+    filters_table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.darkblue),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("GRID", (0, 0), (-1, -1), 1, colors.grey),
+        ("BACKGROUND", (0, 1), (-1, -1), colors.beige),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+    ]))
 
     elements = [
         Paragraph("Web Log Analyzer PDF Export", styles["Title"]),                                
-        Paragraph(f"Generated: {generated_at}", styles["Normal"]),                                
+        Paragraph(f"Generated: {generated_at}", styles["Normal"]),
+        Paragraph("Filters Applied", styles["Heading2"]),
+        filters_table,
+        Spacer(1, 12),
         Paragraph("Summary", styles["Heading2"]),
         summary_table,                
     ]
