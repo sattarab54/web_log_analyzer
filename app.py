@@ -18,10 +18,14 @@ from reportlab.platypus import (
     Table,
     TableStyle,
     Spacer,
+    KeepTogether,
 )
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
+from reportlab.graphics.shapes import Drawing
+from reportlab.graphics.charts.barcharts import VerticalBarChart
+from reportlab.graphics.charts.textlabels import Label
 
 app = Flask(__name__)
 
@@ -1897,6 +1901,7 @@ def export_history_pdf():
             in item.get("levels", "").upper()
         ]
 
+
     if history_from:
         display_history = [
             item
@@ -1987,6 +1992,41 @@ def export_history_pdf():
     if not latest_keyword:
         latest_keyword = "Not set"
 
+    chart_counts = {}
+    for item in display_history:
+        keyword = item.get("keyword", "").strip()
+
+        if not keyword:
+            keyword = "Not set"
+
+        chart_counts[keyword] = (
+            chart_counts.get(keyword, 0)
+            + item.get("matches", 0)
+        )
+
+    chart_labels = list(chart_counts.keys())
+    chart_values = list(chart_counts.values())
+
+    chart_drawing = Drawing(500, 220)
+
+    bar_chart = VerticalBarChart()
+    bar_chart.x = 50
+    bar_chart.y = 40
+    bar_chart.height = 140
+    bar_chart.width = 400
+
+    bar_chart.bars[0].fillColor = colors.darkblue
+
+    bar_chart.data = [chart_values]
+    bar_chart.categoryAxis.categoryNames = chart_labels
+
+    bar_chart.valueAxis.valueMin = 0
+    bar_chart.barLabels.nudge = 7
+    bar_chart.barLabels.fontSize = 8
+    bar_chart.barLabelFormat = "%d"
+
+    chart_drawing.add(bar_chart)
+
     summary_data = [
         ["Metric", "Value"],
         ["Total Visible Searches", str(total_visible_searches)],
@@ -2050,7 +2090,12 @@ def export_history_pdf():
         filters_table,
         Spacer(1, 12),
         Paragraph("Summary", styles["Heading2"]),
-        summary_table,                
+        summary_table,
+        Spacer(1, 18),
+        KeepTogether([
+            Paragraph("Keyword Matches Chart", styles["Heading2"]),
+            chart_drawing,
+        ]),                
     ]
 
     doc.build(elements)
