@@ -2007,6 +2007,28 @@ def export_history_pdf():
     chart_labels = list(chart_counts.keys())
     chart_values = list(chart_counts.values())
 
+    level_counts = {
+        "CRITICAL": 0,
+        "ERROR": 0,
+        "WARNING": 0,
+        "INFO": 0,
+        "DEBUG": 0,
+        "TRACE": 0,
+    }
+
+    for item in display_history:
+        item_levels = item.get("levels", "")
+
+        for level in level_counts:
+            if history_level:
+                if level == history_level:
+                    level_counts[level] += 1
+            elif level in item_levels:
+                level_counts[level] += 1
+
+    level_chart_labels = list(level_counts.keys())
+    level_chart_values = list(level_counts.values())
+
     chart_drawing = Drawing(500, 220)
 
     bar_chart = VerticalBarChart()
@@ -2027,6 +2049,27 @@ def export_history_pdf():
 
     chart_drawing.add(bar_chart)
 
+    level_chart_drawing = Drawing(500, 220)
+
+    level_bar_chart = VerticalBarChart()
+    level_bar_chart.x = 50
+    level_bar_chart.y = 40
+    level_bar_chart.height = 140
+    level_bar_chart.width = 400
+
+    level_bar_chart.bars[0].fillColor = colors.darkblue
+
+    level_bar_chart.data = [level_chart_values]
+    level_bar_chart.categoryAxis.categoryNames = level_chart_labels
+
+    level_bar_chart.valueAxis.valueMin = 0
+
+    level_bar_chart.barLabels.nudge = 7
+    level_bar_chart.barLabels.fontSize = 8
+    level_bar_chart.barLabelFormat = "%d"
+
+    level_chart_drawing.add(level_bar_chart)
+        
     summary_data = [
         ["Metric", "Value"],
         ["Total Visible Searches", str(total_visible_searches)],
@@ -2095,7 +2138,13 @@ def export_history_pdf():
         KeepTogether([
             Paragraph("Keyword Matches Chart", styles["Heading2"]),
             chart_drawing,
-        ]),                
+        ]),
+
+        Spacer(1, 18),
+        KeepTogether([
+            Paragraph("Log Level Counts Chart", styles["Heading2"]),
+            level_chart_drawing,
+        ]),
     ]
 
     doc.build(elements)
@@ -2109,7 +2158,6 @@ def export_history_pdf():
         mimetype="application/pdf",
     )
     
-
 @app.route("/download-filtered-history-csv")
 def download_filtered_history_csv():
     history_search = request.args.get("history_search", "")
