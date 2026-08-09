@@ -2029,6 +2029,21 @@ def export_history_pdf():
     level_chart_labels = list(level_counts.keys())
     level_chart_values = list(level_counts.values())
 
+    date_counts = {}
+
+    for item in display_history:
+        searched_at = item.get("searched_at", "")
+        search_date = searched_at[:10]
+
+        if search_date:
+            date_counts[search_date] = date_counts.get(search_date, 0) + 1
+
+    date_chart_labels = [
+        datetime.strptime(date, "%Y-%m-%d").strftime("%b %d")
+        for date in date_counts.keys()
+    ]
+    date_chart_values = list(date_counts.values()) 
+
     chart_drawing = Drawing(500, 220)
 
     bar_chart = VerticalBarChart()
@@ -2069,6 +2084,27 @@ def export_history_pdf():
     level_bar_chart.barLabelFormat = "%d"
 
     level_chart_drawing.add(level_bar_chart)
+
+    date_chart_drawing = Drawing(500, 220)
+
+    date_bar_chart = VerticalBarChart()
+    date_bar_chart.x = 50
+    date_bar_chart.y = 40
+    date_bar_chart.height = 140
+    date_bar_chart.width = 400
+
+    date_bar_chart.bars[0].fillColor = colors.darkblue
+
+    date_bar_chart.data = [date_chart_values]
+    date_bar_chart.categoryAxis.categoryNames = date_chart_labels
+
+    date_bar_chart.valueAxis.valueMin = 0
+
+    date_bar_chart.barLabels.nudge = 7
+    date_bar_chart.barLabels.fontSize = 8
+    date_bar_chart.barLabelFormat = "%d"
+
+    date_chart_drawing.add(date_bar_chart)
         
     summary_data = [
         ["Metric", "Value"],
@@ -2144,6 +2180,12 @@ def export_history_pdf():
         KeepTogether([
             Paragraph("Log Level Counts Chart", styles["Heading2"]),
             level_chart_drawing,
+        ]),
+
+        Spacer(1, 18),
+        KeepTogether([
+            Paragraph("Searches by Date Chart", styles["Heading2"]),
+            date_chart_drawing,
         ]),
     ]
 
