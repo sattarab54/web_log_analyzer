@@ -2042,7 +2042,26 @@ def export_history_pdf():
         datetime.strptime(date, "%Y-%m-%d").strftime("%b %d")
         for date in date_counts.keys()
     ]
-    date_chart_values = list(date_counts.values()) 
+    date_chart_values = list(date_counts.values())
+
+    matches_by_date = {}
+
+    for item in display_history:
+        searched_at = item.get("searched_at", "")
+        search_date = searched_at[:10]
+
+        if search_date:
+            matches_by_date[search_date] = (
+                matches_by_date.get(search_date, 0)
+                + item.get("matches", 0)
+            )
+
+    matches_date_labels = [
+        datetime.strptime(date, "%Y-%m-%d").strftime("%b %d")
+        for date in matches_by_date.keys()
+    ]
+
+    matches_date_values = list(matches_by_date.values())
 
     chart_drawing = Drawing(500, 220)
 
@@ -2105,6 +2124,27 @@ def export_history_pdf():
     date_bar_chart.barLabelFormat = "%d"
 
     date_chart_drawing.add(date_bar_chart)
+
+    matches_date_chart_drawing = Drawing(500, 220)
+
+    matches_date_bar_chart = VerticalBarChart()
+    matches_date_bar_chart.x = 50
+    matches_date_bar_chart.y = 40
+    matches_date_bar_chart.height = 140
+    matches_date_bar_chart.width = 400
+
+    matches_date_bar_chart.bars[0].fillColor = colors.darkblue
+
+    matches_date_bar_chart.data = [matches_date_values]
+    matches_date_bar_chart.categoryAxis.categoryNames = matches_date_labels
+
+    matches_date_bar_chart.valueAxis.valueMin = 0
+
+    matches_date_bar_chart.barLabels.nudge = 7
+    matches_date_bar_chart.barLabels.fontSize = 8
+    matches_date_bar_chart.barLabelFormat = "%d"
+
+    matches_date_chart_drawing.add(matches_date_bar_chart)
         
     summary_data = [
         ["Metric", "Value"],
@@ -2186,6 +2226,12 @@ def export_history_pdf():
         KeepTogether([
             Paragraph("Searches by Date Chart", styles["Heading2"]),
             date_chart_drawing,
+        ]),
+
+        Spacer(1, 18),
+        KeepTogether([
+            Paragraph("Matches by Date Chart", styles["Heading2"]),
+            matches_date_chart_drawing,
         ]),
     ]
 
