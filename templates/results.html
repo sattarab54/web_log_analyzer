@@ -13,13 +13,14 @@
     <p><strong>Keyword:</strong> {{ keyword }}</p>
     <p><strong>Start datetime:</strong> {{ start_datetime_text or "Not set" }}</p>
     <p><strong>End datetime:</strong> {{ end_datetime_text or "Not set" }}</p>
-    <p><strong>Case-sensitive search:</strong>
+    <p><strong>Case-sensitive search:</strong>    
     {% if case_sensitive %}
         Yes
     {% else %}
         No
     {% endif %}
     </p>
+    <p><strong>Detected Log Format:</strong> {{ detected_format|capitalize }}</p>
     <p><strong>Selected levels:</strong> {{ selected_levels | join(", ") }}</p>
     <p><strong>Total matching lines:</strong> {{ total }}</p>
 

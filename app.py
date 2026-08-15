@@ -68,6 +68,64 @@ def clean_export_results(results):
 
     return cleaned
 
+def detect_log_format(line):
+    line = line.strip()
+
+    if not line:
+        return "empty"
+    if line.startswith("{") and line.endswith("}"):
+        return "json"
+
+    if " - - [" in line and '] \"' in line:
+        return "apache"
+
+    if any(level in line.upper() for level in [
+        "CRITICAL",
+        "ERROR",
+        "WARNING",
+        "INFO",
+        "DEBUG",
+        "TRACE",
+    ]):
+        return "standard"
+    return "unknown"
+
+def parse_json_log_line(line):
+    try:
+        data = json.loads(line)
+    except json.JSONDecodeError:
+        return line
+
+    level = str(data.get("level", "")).upper()
+    message = str(data.get("message", ""))
+
+    if level and message:
+        return f"{level} {message}"
+
+    return ""
+
+def parse_apache_log_line(line):
+    parts = line.split('"')
+    if len(parts) < 3:
+        return line
+
+    request_part = parts[1].strip()
+    status_part = parts[2].strip().split()
+
+    if not status_part:
+        return line
+
+    status_code = status_part[0]
+
+    if status_code.startswith("5"):
+        level = "ERROR"
+    elif status_code.startswith("4"):
+        level = "WARNING"
+    else:
+        level = "INFO"
+
+    return f"{level} {request_part} {status_code}"
+            
 @app.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "POST":
@@ -92,8 +150,33 @@ def index():
             )
 
         lines = log_text.splitlines()
-        
 
+        detected_formats = [
+            detect_log_format(line)
+            for line in lines
+            if line.strip()
+        ]
+
+        detected_format = (
+            max(set(detected_formats), key=detected_formats.count)
+            if detected_formats
+            else "unknown"
+        )
+
+        if detected_format == "json":
+            lines = [
+                parse_json_log_line(line)
+                for line in lines
+                if line.strip()
+            ]
+
+        if detected_format == "apache":
+            lines = [
+                parse_apache_log_line(line)
+                for line in lines
+                if line.strip()
+            ]
+        
         start_datetime = None
         end_datetime = None
 
@@ -391,6 +474,7 @@ def index():
             visible_level_counts=visible_level_counts,
             chart_labels=chart_labels,
             chart_values=chart_values,
+            detected_format=detected_format,
         )
 
     return render_template("index.html")
