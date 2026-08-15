@@ -157,25 +157,32 @@ def index():
             if line.strip()
         ]
 
-        detected_format = (
-            max(set(detected_formats), key=detected_formats.count)
-            if detected_formats
-            else "unknown"
-        )
+        unique_formats = set(detected_formats)
 
-        if detected_format == "json":
-            lines = [
-                parse_json_log_line(line)
-                for line in lines
-                if line.strip()
-            ]
+        if len(unique_formats) > 1:
+            detected_format = "mixed"
+        elif detected_formats:
+            detected_format = detected_formats[0]
+        else:
+            detected_format = "unknown"
 
-        if detected_format == "apache":
-            lines = [
-                parse_apache_log_line(line)
-                for line in lines
-                if line.strip()
-            ]
+        processed_lines = []
+
+        for line in lines:
+            if not line.strip():
+                continue
+
+            line_format = detect_log_format(line)
+
+            if line_format == "json":
+                line = parse_json_log_line(line)
+            elif line_format == "apache":
+                line = parse_apache_log_line(line)
+
+            if line:
+                processed_lines.append(line)
+
+        lines = processed_lines            
         
         start_datetime = None
         end_datetime = None
