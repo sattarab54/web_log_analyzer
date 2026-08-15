@@ -21,6 +21,7 @@
     {% endif %}
     </p>
     <p><strong>Detected Log Format:</strong> {{ detected_format|capitalize }}</p>
+    <p><strong>Formats Found:</strong> {{ formats_found | map('capitalize') | join(', ') }}</p>
     <p><strong>Selected levels:</strong> {{ selected_levels | join(", ") }}</p>
     <p><strong>Total matching lines:</strong> {{ total }}</p>
 
