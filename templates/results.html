@@ -22,6 +22,12 @@
     </p>
     <p><strong>Detected Log Format:</strong> {{ detected_format|capitalize }}</p>
     <p><strong>Formats Found:</strong> {{ formats_found | map('capitalize') | join(', ') }}</p>
+    <p><strong>Format Counts:</strong></p>
+    <ul>
+        {% for format_name, count in format_counts.items() %}
+            <li>{{ format_name|capitalize }}: {{ count }}</li>
+        {% endfor %}
+    </ul>
     <p><strong>Selected levels:</strong> {{ selected_levels | join(", ") }}</p>
     <p><strong>Total matching lines:</strong> {{ total }}</p>
 

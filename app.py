@@ -160,6 +160,11 @@ def index():
         unique_formats = set(detected_formats)
         formats_found = sorted(unique_formats)
 
+        format_counts = {
+            format_name: detected_formats.count(format_name)
+            for format_name in formats_found
+        }
+
         if len(unique_formats) > 1:
             detected_format = "mixed"
         elif detected_formats:
@@ -484,6 +489,7 @@ def index():
             chart_values=chart_values,
             detected_format=detected_format,
             formats_found=formats_found,
+            format_counts=format_counts,
         )
 
     return render_template("index.html")
