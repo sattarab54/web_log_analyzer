@@ -165,6 +165,16 @@ def index():
             for format_name in formats_found
         }
 
+        total_detected_formats = len(detected_formats)
+        format_percentages = {
+            format_name: (
+                format_counts[format_name] / total_detected_formats * 100
+                if total_detected_formats
+                else 0
+            )
+            for format_name in formats_found
+        }
+
         if len(unique_formats) > 1:
             detected_format = "mixed"
         elif detected_formats:
@@ -490,6 +500,7 @@ def index():
             detected_format=detected_format,
             formats_found=formats_found,
             format_counts=format_counts,
+            format_percentages=format_percentages
         )
 
     return render_template("index.html")
