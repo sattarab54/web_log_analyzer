@@ -21,7 +21,11 @@
     {% endif %}
     </p>
     <p><strong>Detected Log Format:</strong> {{ detected_format|capitalize }}</p>
-    <p><strong>Dominant Format:</strong> {{dominant_format|capitalize }}</p>
+    <p>
+        <strong>Dominant Format:</strong>
+        {{dominant_format|capitalize }}
+        ({{ "%.1f"|format(dominant_percentage) }}%)
+    </p>
     <p><strong>Formats Found:</strong> {{ formats_found | map('capitalize') | join(', ') }}</p>
     <p><strong>Format Counts:</strong></p>
     <ul>
