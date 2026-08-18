@@ -194,10 +194,12 @@ def index():
         else:
             detected_format = "unknown"
 
+        ignored_lines = 0   
         processed_lines = []
 
         for line in lines:
             if not line.strip():
+                ignored_lines += 1
                 continue
 
             line_format = detect_log_format(line)
@@ -209,6 +211,8 @@ def index():
 
             if line:
                 processed_lines.append(line)
+            else:
+                ignored_lines += 1
 
         lines = processed_lines            
         
@@ -484,6 +488,7 @@ def index():
             keyword=keyword,
             results=results,
             total=len(results),
+            ignored_lines=ignored_lines,
             selected_levels=selected_levels,
             summary=summary,
             case_sensitive=case_sensitive,
