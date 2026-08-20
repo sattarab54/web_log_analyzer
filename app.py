@@ -214,7 +214,9 @@ def index():
             else:
                 ignored_lines += 1
 
-        lines = processed_lines            
+        lines = processed_lines
+
+        processed_line_count = len(processed_lines)
         
         start_datetime = None
         end_datetime = None
@@ -488,6 +490,7 @@ def index():
             keyword=keyword,
             results=results,
             total=len(results),
+            processed_line_count=processed_line_count,
             ignored_lines=ignored_lines,
             selected_levels=selected_levels,
             summary=summary,
