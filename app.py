@@ -150,6 +150,7 @@ def index():
             )
 
         lines = log_text.splitlines()
+        total_input_lines = len(lines)
 
         detected_formats = [
             detect_log_format(line)
@@ -490,6 +491,7 @@ def index():
             keyword=keyword,
             results=results,
             total=len(results),
+            total_input_lines=total_input_lines,
             processed_line_count=processed_line_count,
             ignored_lines=ignored_lines,
             selected_levels=selected_levels,
