@@ -218,6 +218,12 @@ def index():
         lines = processed_lines
 
         processed_line_count = len(processed_lines)
+
+        processing_rate = (
+            processed_line_count / total_input_lines * 100
+            if total_input_lines
+            else 0
+        )
         
         start_datetime = None
         end_datetime = None
@@ -493,6 +499,7 @@ def index():
             total=len(results),
             total_input_lines=total_input_lines,
             processed_line_count=processed_line_count,
+            processing_rate=processing_rate,
             ignored_lines=ignored_lines,
             selected_levels=selected_levels,
             summary=summary,

@@ -40,6 +40,7 @@
     <p><strong>Total matching lines:</strong> {{ total }}</p>
     <p><strong>Total Input Lines:</strong> {{ total_input_lines }}</p>
     <p><strong>Processed Lines:</strong> {{ processed_line_count }}</p>
+    <p><strong>Processing Rate:</strong> {{ "%.1f" | format(processing_rate) }}%</p>
     <p><strong>Ignored Lines:</strong> {{ ignored_lines }}</p>
 
     <h2>Summary</h2>
