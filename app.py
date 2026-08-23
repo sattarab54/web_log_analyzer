@@ -197,6 +197,7 @@ def index():
 
         ignored_lines = 0
         blank_lines = 0
+        invalid_json_lines = 0
         processed_lines = []
         
         for line in lines:
@@ -209,6 +210,10 @@ def index():
 
             if line_format == "json":
                 line = parse_json_log_line(line)
+
+                if not line:
+                    invalid_json_lines += 1
+                    
             elif line_format == "apache":
                 line = parse_apache_log_line(line)
 
@@ -504,6 +509,7 @@ def index():
             processing_rate=processing_rate,
             ignored_lines=ignored_lines,
             blank_lines=blank_lines,
+            invalid_json_lines=invalid_json_lines,
             selected_levels=selected_levels,
             summary=summary,
             case_sensitive=case_sensitive,
