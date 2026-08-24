@@ -20,40 +20,52 @@
         No
     {% endif %}
     </p>
-    <p><strong>Detected Log Format:</strong> {{ detected_format|capitalize }}</p>
-    <p>
-        <strong>Dominant Format:</strong>
-        {{dominant_format|capitalize }}
-        ({{ "%.1f"|format(dominant_percentage) }}%)
-    </p>
-    <p><strong>Formats Found:</strong> {{ formats_found | map('capitalize') | join(', ') }}</p>
-    <p><strong>Format Counts:</strong></p>
-    <ul>
-        {% for format_name, count in format_counts.items() %}
-            <li>{{ format_name|capitalize }}:
-                {{ count }}
-                ({{ "%.1f"|format(format_percentages[format_name]) }}%)
-            </li>
-        {% endfor %}
-    </ul>
+
+    <div class="result-card">
+        <h3>Log Format</h3>
+        <p><strong>Detected Log Format:</strong> {{ detected_format|capitalize }}</p>
+        <p>
+            <strong>Dominant Format:</strong>
+            {{dominant_format|capitalize }}
+            ({{ "%.1f"|format(dominant_percentage) }}%)
+        </p>
+        <p><strong>Formats Found:</strong> {{ formats_found | map('capitalize') | join(', ') }}</p>
+        <p><strong>Format Counts:</strong></p>
+        <ul>
+            {% for format_name, count in format_counts.items() %}
+                <li>{{ format_name|capitalize }}:
+                    {{ count }}
+                    ({{ "%.1f"|format(format_percentages[format_name]) }}%)
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+            
     <p><strong>Selected levels:</strong> {{ selected_levels | join(", ") }}</p>
     <p><strong>Total matching lines:</strong> {{ total }}</p>
-    <p><strong>Total Input Lines:</strong> {{ total_input_lines }}</p>
-    <p><strong>Processed Lines:</strong> {{ processed_line_count }}</p>
-    <p><strong>Processing Rate:</strong> {{ "%.1f" | format(processing_rate) }}%</p>
-    <p><strong>Ignored Lines:</strong> {{ ignored_lines }}</p>
-    <p><strong>Blank Lines:</strong> {{ blank_lines }}</p>
-    <p><strong>Invalid JSON Lines:</strong> {{ invalid_json_lines }}</p>
+
+    <div class="result-card">
+        <h3>Line Quality</h3>
+
+        <div class="result-grid">
+            <p><strong>Total Input Lines:</strong> {{ total_input_lines }}</p>
+            <p><strong>Processed Lines:</strong> {{ processed_line_count }}</p>
+            <p><strong>Processing Rate:</strong> {{ "%.1f" | format(processing_rate) }}%</p>
+            <p><strong>Ignored Lines:</strong> {{ ignored_lines }}</p>
+            <p><strong>Blank Lines:</strong> {{ blank_lines }}</p>
+            <p><strong>Invalid JSON Lines:</strong> {{ invalid_json_lines }}</p>
+        </div>    
+    </div>
 
     <h2>Summary</h2>
-    <ul>
-        <li>CRITICAL: {{ summary["CRITICAL"] }}</li>
-        <li>ERROR: {{ summary["ERROR"] }}</li>
-        <li>WARNING: {{ summary["WARNING"] }}</li>
-        <li>INFO: {{ summary["INFO"] }}</LI>
-        <li>DEBUG: {{ summary["DEBUG"] }}</li>
-        <li>TRACE: {{ summary["TRACE"] }}</li>
-    <ul>
+    <div class="summary-grid">
+        <p><strong>CRITICAL:</strong> {{ summary["CRITICAL"] }}</p>
+        <p><strong>ERROR:</strong> {{ summary["ERROR"] }}</p>
+        <p><strong>WARNING:</strong> {{ summary["WARNING"] }}</p>
+        <p><strong>INFO:</strong> {{ summary["INFO"] }}</p>
+        <p><strong>DEBUG:</strong> {{ summary["DEBUG"] }}</p>
+        <p><strong>TRACE:</strong> {{ summary["TRACE"] }}</p>
+    </div>
     
     {% if source_name == "History filter" %}
         <h2>Current Analysis</h2>

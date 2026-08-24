@@ -176,6 +176,42 @@ pre {
     background-color: #e0e0e0;
 }
 
+.result-card {
+    background: #f4f7fb;
+    border: 1px solid #cfd8e3;
+    border_radius: 10px;
+    padding: 14px 18px;
+    margin: 16px 0;
+}
+
+.result-card h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #2f4f6f;
+}
+
+.result-card p {
+    margin: 6px 0;
+}
+
+.result-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 24px;
+    row-gap: 4px;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 24px;
+    row-gap: 4px;
+}
+
+.summary-grid p {
+    margin: 4px 0;
+}
+
 .chart-row {
     display: flex;
     align-item: center;
@@ -184,7 +220,7 @@ pre {
 }
 
 .chart-row span {
-    eidth: 80px;
+    width: 80px;
 }
 
 .chart-bar {
@@ -214,7 +250,7 @@ pre {
 
 .export-buttons a:hover {
      background-color: #125ca1;
-}
+ }
 
 .action-button {
     display: inline-block;
