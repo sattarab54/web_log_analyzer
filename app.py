@@ -107,13 +107,13 @@ def parse_json_log_line(line):
 def parse_apache_log_line(line):
     parts = line.split('"')
     if len(parts) < 3:
-        return line
+        return ""
 
     request_part = parts[1].strip()
     status_part = parts[2].strip().split()
 
     if not status_part:
-        return line
+        return ""
 
     status_code = status_part[0]
 
@@ -198,6 +198,7 @@ def index():
         ignored_lines = 0
         blank_lines = 0
         invalid_json_lines = 0
+        invalid_apache_lines = 0
         processed_lines = []
         
         for line in lines:
@@ -216,6 +217,9 @@ def index():
                     
             elif line_format == "apache":
                 line = parse_apache_log_line(line)
+
+                if not line:
+                    invalid_apache_lines += 1
 
             if line:
                 processed_lines.append(line)
@@ -510,6 +514,7 @@ def index():
             ignored_lines=ignored_lines,
             blank_lines=blank_lines,
             invalid_json_lines=invalid_json_lines,
+            invalid_apache_lines=invalid_apache_lines,
             selected_levels=selected_levels,
             summary=summary,
             case_sensitive=case_sensitive,
