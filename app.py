@@ -94,7 +94,7 @@ def parse_json_log_line(line):
     try:
         data = json.loads(line)
     except json.JSONDecodeError:
-        return line
+        return ""
 
     level = str(data.get("level", "")).upper()
     message = str(data.get("message", ""))
