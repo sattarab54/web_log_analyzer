@@ -56,9 +56,19 @@
             <p><strong>Invalid JSON Lines:</strong> {{ invalid_json_lines }}</p>
             <p><strong>Invalid Apache Lines:</strong> {{ invalid_apache_lines }}</p>
             <p><strong>Unknown Lines:</strong> {{ unknown_lines }}</p>
-        </div>    
+        </div>
     </div>
 
+    {% if ignored_lines > 0 %}
+    <div class="diagnostic-summary">
+        <strong>{{ ignored_lines }} lines ignored:</strong>
+        <span>{{ blank_lines }} blank</span>
+        <span>{{ invalid_json_lines }} invalid JSON</span>
+        <span>{{ invalid_apache_lines }} invalid Apache</span>
+        <span>{{ unknown_lines }} unknown</span>
+    </div>
+    {% endif %}
+    
     <h2>Summary</h2>
     <div class="summary-grid">
         <p><strong>CRITICAL:</strong> {{ summary["CRITICAL"] }}</p>

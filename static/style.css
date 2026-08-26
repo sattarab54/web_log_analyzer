@@ -212,6 +212,25 @@ pre {
     margin: 4px 0;
 }
 
+.diagnostic-summary {
+    display: flex;
+    flex-wrap;
+    gap: 10px 16px;
+    background: #f8f9fb;
+    border: 1px solid #d8dee8;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin: 12px 0 16px;
+}
+
+.diagnostic-summary strong {
+    color: #2f4f6f;
+}
+
+.diagnostic-summary span {
+    white-space: nowrap;
+}
+
 .chart-row {
     display: flex;
     align-item: center;
