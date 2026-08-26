@@ -199,6 +199,7 @@ def index():
         blank_lines = 0
         invalid_json_lines = 0
         invalid_apache_lines = 0
+        unknown_lines = 0
         processed_lines = []
         
         for line in lines:
@@ -208,6 +209,10 @@ def index():
                 continue
 
             line_format = detect_log_format(line)
+
+            if line_format == "unknown":
+                unknown_lines += 1
+                line = ""
 
             if line_format == "json":
                 line = parse_json_log_line(line)
@@ -515,6 +520,7 @@ def index():
             blank_lines=blank_lines,
             invalid_json_lines=invalid_json_lines,
             invalid_apache_lines=invalid_apache_lines,
+            unknown_lines=unknown_lines,
             selected_levels=selected_levels,
             summary=summary,
             case_sensitive=case_sensitive,
