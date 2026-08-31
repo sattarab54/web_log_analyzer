@@ -317,6 +317,209 @@ def test_history_no_filters(monkeypatch):
     assert b"login" in response.data
     assert b"payment" in response.data
 
+def test_history_sort_newest(monkeypatch):
+    client = app.test_client()
+
+    test_history = [
+        {
+            "keyword": "older",
+            "levels": "INFO",
+            "matches": 1,
+            "searched_at": "2026-08-20 10:00:00",
+        },
+        {
+            "keyword": "newer",
+            "levels": "ERROR",
+            "matches": 2,
+            "searched_at": "2026-08-25 10:00:00",
+        },
+    ]
+
+    monkeypatch.setattr(app_module, "history", test_history)
+
+    response = client.get(
+        "/filter-history?history_sort=newest"
+    )
+
+    assert response.status_code == 200
+    page =  response.data.decode()
+    assert page.find("newer") != -1
+    assert page.find("older") != -1
+    assert page.find("newer") < page.find("older")
+
+def test_history_sort_oldest(monkeypatch):
+    client = app.test_client()
+
+    test_history = [
+        {
+            "keyword": "older",
+            "levels": "INFO",
+            "matches": 1,
+            "searched_at": "2026-08-20 10:00:00",
+        },
+        {
+            "keyword": "newer",
+            "levels": "ERROR",
+            "matches": 2,
+            "searched_at": "2026-08-25 10:00:00",
+        },
+    ]
+
+    monkeypatch.setattr(app_module, "history", test_history)
+
+    response = client.get(
+        "/filter-history?history_sort=oldest"
+    )
+
+    assert response.status_code == 200
+    page =  response.data.decode()
+    assert page.find("newer") != -1
+    assert page.find("older") != -1
+    assert page.find("older") < page.find("newer")
+
+def test_history_sort_keyword_asc(monkeypatch):
+    client = app.test_client()
+
+    test_history = [
+        {
+            "keyword": "zebra",
+            "levels": "INFO",
+            "matches": 1,
+            "searched_at": "2026-08-20 10:00:00",
+        },
+        {
+            "keyword": "apple",
+            "levels": "ERROR",
+            "matches": 2,
+            "searched_at": "2026-08-25 10:00:00",
+        },
+    ]
+
+    monkeypatch.setattr(app_module, "history", test_history)
+
+    response = client.get(
+        "/filter-history?history_sort=keyword_asc"
+    )
+
+    assert response.status_code == 200
+    page =  response.data.decode()
+    assert page.find("apple") != -1
+    assert page.find("zebra") != -1
+    assert page.find("apple") < page.find("zebra")
+
+def test_history_sort_keyword_desc(monkeypatch):
+    client = app.test_client()
+
+    test_history = [
+        {
+            "keyword": "apple",
+            "levels": "INFO",
+            "matches": 1,
+            "searched_at": "2026-08-20 10:00:00",
+        },
+        {
+            "keyword": "zebra",
+            "levels": "ERROR",
+            "matches": 2,
+            "searched_at": "2026-08-25 10:00:00",
+        },
+    ]
+
+    monkeypatch.setattr(app_module, "history", test_history)
+
+    response = client.get(
+        "/filter-history?history_sort=keyword_desc"
+    )
+
+    assert response.status_code == 200
+    page =  response.data.decode()
+    assert page.find("zebra") != -1
+    assert page.find("apple") != -1    
+    assert page.find("zebra") < page.find("apple")
+
+def test_history_pagination_page_1(monkeypatch):
+    client = app.test_client()
+
+    test_history = [
+        {
+            "keyword": f"item{i}",
+            "levels": "INFO",
+            "matches": i,
+            "searched_at": f"2026-08-{i:02d} 10:00:00",
+        }
+        for i in range(1, 13)        
+    ]
+
+    monkeypatch.setattr(app_module, "history", test_history)
+
+    response = client.get(
+        "/filter-history?history_sort=oldest&page=1"
+    )
+
+    assert response.status_code == 200
+
+    page =  response.data.decode()
+    assert "<td>item2</td>" in page
+    assert "<td>item10</td>" in page
+    assert "<td>item11</td>" not in page
+    assert "<td>item12</td>" not in page
+    
+def test_history_pagination_page_2(monkeypatch):
+    client = app.test_client()
+
+    test_history = [
+        {
+            "keyword": f"item{i}",
+            "levels": "INFO",
+            "matches": i,
+            "searched_at": f"2026-08-{i:02d} 10:00:00",
+        }
+        for i in range(1, 13)        
+    ]
+
+    monkeypatch.setattr(app_module, "history", test_history)
+
+    response = client.get(
+        "/filter-history?history_sort=oldest&page=2"
+    )
+
+    assert response.status_code == 200
+
+    page =  response.data.decode()
+    assert "<td>item11</td>" in page
+    assert "<td>item12</td>" in page
+    assert "<td>item10</td>" not in page
+    
+def test_history_pagination_out_of_range(monkeypatch):
+    client = app.test_client()
+
+    test_history = [
+        {
+            "keyword": f"item{i}",
+            "levels": "INFO",
+            "matches": i,
+            "searched_at": f"2026-08-{i:02d} 10:00:00",
+        }
+        for i in range(1, 13)        
+    ]
+
+    monkeypatch.setattr(app_module, "history", test_history)
+
+    response = client.get(
+        "/filter-history?history_sort=oldest&page=99"
+    )
+
+    assert response.status_code == 200
+
+    page =  response.data.decode()   
+
+    assert "<td>item11</td>" not in page
+    assert "<td>item12</td>" not in page
+
+
+
+
+
 
 
 
