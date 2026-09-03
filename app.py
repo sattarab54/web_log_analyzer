@@ -1682,7 +1682,7 @@ def download_filtered_history_excel():
     if history_search:
         display_history = [
             item
-            for item in disply_history
+            for item in display_history
             if (
                 history_search.lower() in item.get("keyword", "").lower()
                 or history_search.lower() in item.get("levels", "").lower()
@@ -1910,16 +1910,16 @@ def download_filtered_history_excel():
     ])
 
     most_common_level = "N/A"
-
+    
+    level_counts = {
+        "CRITICAL": 0,
+        "ERROR": 0,
+        "WARNING": 0,
+        "INFO": 0,
+        "DEBUG": 0,
+        "TRACE": 0,
+    }
     if display_history:
-        level_counts = {
-            "CRITICAL": 0,
-            "ERROR": 0,
-            "WARNING": 0,
-            "INFO": 0,
-            "DEBUG": 0,
-            "TRACE": 0,
-        }
 
         for item in display_history:
             level_text = item.get("levels", "")
