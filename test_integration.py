@@ -3046,11 +3046,342 @@ def test_filtered_history_excel_charts_single_day_range(monkeypatch):
     assert chart_values["INFO"] == 1
     assert chart_values["DEBUG"] == 0
 
+def test_filtered_history_excel_charts_level_filter(monkeypatch):
+    client = app.test_client()
 
+    test_history = [
+        {
+            "keyword": "login",
+            "levels": "ERROR",
+            "matches": 3,
+            "searched_at": "2026-08-20 10:00:00",
+            "results": [],
+        },
+        {
+            "keyword": "payment",
+            "levels": "WARNING",
+            "matches": 4,
+            "searched_at": "2026-08-20 11:00:00",
+            "results": [],
+        },
+        {
+            "keyword": "server",
+            "levels": "ERROR",
+            "matches": 2,
+            "searched_at": "2026-08-21 09:00:00",
+            "results": [],
+        },        
+    ]
+    monkeypatch.setattr(app_module, "history", test_history)
 
+    response = client.get(
+        "/download-filtered-history-excel?history_level=ERROR"                
+    )
 
+    assert response.status_code == 200
 
+    workbook = load_workbook(BytesIO(response.data))
+    charts_sheet = workbook["Charts"]
 
+    chart_values = {
+        charts_sheet.cell(row=row, column=1).value:
+        charts_sheet.cell(row=row, column=2).value
+        for row in range(2, charts_sheet.max_row + 1)
+    }
+    assert chart_values["ERROR"] == 2
+    assert chart_values["WARNING"] == 0
+    
+def test_filtered_history_excel_charts_level_filter_case_insensitive(monkeypatch):
+    client = app.test_client()
+
+    test_history = [
+        {
+            "keyword": "login",
+            "levels": "ERROR",
+            "matches": 3,
+            "searched_at": "2026-08-20 10:00:00",
+            "results": [],
+        },
+        {
+            "keyword": "payment",
+            "levels": "WARNING",
+            "matches": 4,
+            "searched_at": "2026-08-20 11:00:00",
+            "results": [],
+        },
+        {
+            "keyword": "server",
+            "levels": "ERROR",
+            "matches": 2,
+            "searched_at": "2026-08-21 09:00:00",
+            "results": [],
+        },        
+    ]
+    monkeypatch.setattr(app_module, "history", test_history)
+
+    response = client.get(
+        "/download-filtered-history-excel?history_level=error"                
+    )
+
+    assert response.status_code == 200
+
+    workbook = load_workbook(BytesIO(response.data))
+    charts_sheet = workbook["Charts"]
+
+    chart_values = {
+        charts_sheet.cell(row=row, column=1).value:
+        charts_sheet.cell(row=row, column=2).value
+        for row in range(2, charts_sheet.max_row + 1)
+    }
+    assert chart_values["ERROR"] == 2
+    assert chart_values["WARNING"] == 0
+
+def test_filtered_history_excel_charts_level_filter_no_matches(monkeypatch):
+    client = app.test_client()
+
+    test_history = [
+        {
+            "keyword": "login",
+            "levels": "ERROR",
+            "matches": 3,
+            "searched_at": "2026-08-20 10:00:00",
+            "results": [],
+        },
+        {
+            "keyword": "payment",
+            "levels": "WARNING",
+            "matches": 4,
+            "searched_at": "2026-08-20 11:00:00",
+            "results": [],
+        },
+        {
+            "keyword": "server",
+            "levels": "INFO",
+            "matches": 2,
+            "searched_at": "2026-08-21 09:00:00",
+            "results": [],
+        },        
+    ]
+    monkeypatch.setattr(app_module, "history", test_history)
+
+    response = client.get(
+        "/download-filtered-history-excel?history_level=CRITICAL"                
+    )
+
+    assert response.status_code == 200
+
+    workbook = load_workbook(BytesIO(response.data))
+    charts_sheet = workbook["Charts"]
+
+    chart_values = {
+        charts_sheet.cell(row=row, column=1).value:
+        charts_sheet.cell(row=row, column=2).value
+        for row in range(2, charts_sheet.max_row + 1)
+    }
+
+    assert chart_values["CRITICAL"] == 0
+    assert chart_values["ERROR"] == 0    
+    assert chart_values["WARNING"] == 0
+    assert chart_values["INFO"] == 0
+    assert chart_values["DEBUG"] == 0
+    assert chart_values["TRACE"] == 0
+
+def test_filtered_history_excel_charts_multiple_levels_in_one_row(monkeypatch):
+    client = app.test_client()
+
+    test_history = [
+        {
+            "keyword": "login",
+            "levels": "ERROR, WARNING",
+            "matches": 3,
+            "searched_at": "2026-08-20 10:00:00",
+            "results": [],
+        },        
+        {
+            "keyword": "server",
+            "levels": "INFO",
+            "matches": 2,
+            "searched_at": "2026-08-21 09:00:00",
+            "results": [],
+        },        
+    ]
+    monkeypatch.setattr(app_module, "history", test_history)
+
+    response = client.get(
+        "/download-filtered-history-excel"               
+    )
+
+    assert response.status_code == 200
+
+    workbook = load_workbook(BytesIO(response.data))
+    charts_sheet = workbook["Charts"]
+
+    chart_values = {
+        charts_sheet.cell(row=row, column=1).value:
+        charts_sheet.cell(row=row, column=2).value
+        for row in range(2, charts_sheet.max_row + 1)
+    }
+    
+    assert chart_values["ERROR"] == 1    
+    assert chart_values["WARNING"] == 1
+    assert chart_values["INFO"] == 1
+    
+def test_filtered_history_excel_charts_multiple_levels_with_level_filter(monkeypatch):
+    client = app.test_client()
+
+    test_history = [
+        {
+            "keyword": "login",
+            "levels": "ERROR, WARNING",
+            "matches": 3,
+            "searched_at": "2026-08-20 10:00:00",
+            "results": [],
+        },
+        {
+            "keyword": "server",
+            "levels": "ERROR",
+            "matches": 2,
+            "searched_at": "2026-08-21 09:00:00",
+            "results": [],
+        },
+        {
+            "keyword": "payment",
+            "levels": "INFO",
+            "matches": 4,
+            "searched_at": "2026-08-22 11:00:00",
+            "results": [],
+        },        
+    ]
+    monkeypatch.setattr(app_module, "history", test_history)
+
+    response = client.get(
+        "/download-filtered-history-excel?history_level=WARNING"                
+    )
+
+    assert response.status_code == 200
+
+    workbook = load_workbook(BytesIO(response.data))
+    charts_sheet = workbook["Charts"]
+
+    chart_values = {
+        charts_sheet.cell(row=row, column=1).value:
+        charts_sheet.cell(row=row, column=2).value
+        for row in range(2, charts_sheet.max_row + 1)
+    }
+
+    assert chart_values["WARNING"] == 1
+    assert chart_values["ERROR"] == 0        
+    assert chart_values["INFO"] == 0
+
+def test_filtered_history_excel_charts_missing_levels(monkeypatch):
+    client = app.test_client()
+
+    test_history = [
+        {
+            "keyword": "login",
+            "matches": 3,            
+            "searched_at": "2026-08-20 10:00:00",
+            "results": [],
+        },
+    ]
+
+    monkeypatch.setattr(app_module, "history", test_history)
+
+    response = client.get(
+        "/download-filtered-history-excel"                
+    )
+
+    assert response.status_code == 200
+
+    workbook = load_workbook(BytesIO(response.data))
+    charts_sheet = workbook["Charts"]
+
+    chart_values = {
+        charts_sheet.cell(row=row, column=1).value:
+        charts_sheet.cell(row=row, column=2).value
+        for row in range(2, charts_sheet.max_row + 1)
+    }
+
+    assert chart_values["CRITICAL"] == 0
+    assert chart_values["ERROR"] == 0
+    assert chart_values["WARNING"] == 0            
+    assert chart_values["INFO"] == 0
+    assert chart_values["DEBUG"] == 0
+    assert chart_values["TRACE"] == 0
+
+def test_filtered_history_excel_charts_empty_levels(monkeypatch):
+    client = app.test_client()
+
+    test_history = [
+        {
+            "keyword": "login",
+            "levels": "",
+            "matches": 3,            
+            "searched_at": "2026-08-20 10:00:00",
+            "results": [],
+        },
+    ]
+
+    monkeypatch.setattr(app_module, "history", test_history)
+
+    response = client.get(
+        "/download-filtered-history-excel"                
+    )
+
+    assert response.status_code == 200
+
+    workbook = load_workbook(BytesIO(response.data))
+    charts_sheet = workbook["Charts"]
+
+    chart_values = {
+        charts_sheet.cell(row=row, column=1).value:
+        charts_sheet.cell(row=row, column=2).value
+        for row in range(2, charts_sheet.max_row + 1)
+    }
+
+    assert chart_values["CRITICAL"] == 0
+    assert chart_values["ERROR"] == 0
+    assert chart_values["WARNING"] == 0            
+    assert chart_values["INFO"] == 0
+    assert chart_values["DEBUG"] == 0
+    assert chart_values["TRACE"] == 0
+    
+def test_filtered_history_excel_charts_whitespace_levels(monkeypatch):
+    client = app.test_client()
+
+    test_history = [
+        {
+            "keyword": "login",
+            "levels": "  ",
+            "matches": 3,            
+            "searched_at": "2026-08-20 10:00:00",
+            "results": [],
+        },
+    ]
+
+    monkeypatch.setattr(app_module, "history", test_history)
+
+    response = client.get(
+        "/download-filtered-history-excel"                
+    )
+
+    assert response.status_code == 200
+
+    workbook = load_workbook(BytesIO(response.data))
+    charts_sheet = workbook["Charts"]
+
+    chart_values = {
+        charts_sheet.cell(row=row, column=1).value:
+        charts_sheet.cell(row=row, column=2).value
+        for row in range(2, charts_sheet.max_row + 1)
+    }
+
+    assert chart_values["CRITICAL"] == 0
+    assert chart_values["ERROR"] == 0
+    assert chart_values["WARNING"] == 0            
+    assert chart_values["INFO"] == 0
+    assert chart_values["DEBUG"] == 0
+    assert chart_values["TRACE"] == 0
 
 
 
