@@ -1688,7 +1688,7 @@ def download_filtered_history_excel():
                 or history_search.lower() in item.get("levels", "").lower()
             )
         ]
-
+                                                                                                                        
     if history_from:
         display_history = [
             item for item in display_history
@@ -1699,13 +1699,13 @@ def download_filtered_history_excel():
         display_history = [
             item for item in display_history
             if item.get("searched_at", "")[:10] <= history_to
-        ]
-
+        ]                    
+    
     if history_level:
         display_history = [
             item
             for item in display_history
-            if history_level in item.get("levels", "")
+            if history_level.upper() in item.get("levels", "").upper()
         ]
 
     severity_order = { 
@@ -1910,7 +1910,7 @@ def download_filtered_history_excel():
     ])
 
     most_common_level = "N/A"
-    
+        
     level_counts = {
         "CRITICAL": 0,
         "ERROR": 0,
@@ -1919,6 +1919,7 @@ def download_filtered_history_excel():
         "DEBUG": 0,
         "TRACE": 0,
     }
+    
     if display_history:
 
         for item in display_history:
@@ -1927,6 +1928,7 @@ def download_filtered_history_excel():
             for level in level_counts:
                 if level in level_text:
                     level_counts[level] += 1
+        
         most_common_level = max(
             level_counts,
             key=level_counts.get,
@@ -1963,7 +1965,7 @@ def download_filtered_history_excel():
         "TRACE",
     ]:
         if history_level:
-            count = len(display_history) if level == history_level else 0
+            count = len(display_history) if level.upper() == history_level.upper() else 0
         else:
             count = level_counts.get(level, 0)
 
