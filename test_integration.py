@@ -669,7 +669,7 @@ def test_download_filtered_history_csv_combined_filters(monkeypatch):
     )
 
     assert response.status_code == 200
-    assert b"login,ERROR,3" in response.data
+    assert b"login,Unknown,ERROR,3" in response.data
     assert b"login,WARNING,2" not in response.data
     assert b"payment,ERROR,4" not in response.data
     assert b"login,ERROR,5" not in response.data
@@ -3383,13 +3383,239 @@ def test_filtered_history_excel_charts_whitespace_levels(monkeypatch):
     assert chart_values["DEBUG"] == 0
     assert chart_values["TRACE"] == 0
 
+def test_history_stores_pasted_text_source(monkeypatch):
+    client = app.test_client()
 
+    test_history = []
+    monkeypatch.setattr(app_module, "history", test_history)
 
+    response = client.post(
+        "/",
+        data={
+            "log_text": "2026-08-20 10:00:00 ERROR Login failed",
+            "keyword": "login",
+            "levels": "ERROR",
+        },
+    )
 
+    assert response.status_code == 200
+    assert len(test_history) == 1
+    assert test_history[0]["source"] == "Pasted text"
 
+def test_history_stores_uploaded_file_source(monkeypatch):
+    client = app.test_client()
 
+    test_history = []
+    monkeypatch.setattr(app_module, "history", test_history)
 
+    response = client.post(
+        "/",
+        data={
+            "log_file": (
+                BytesIO(b"2026-08-20 10:00:00 ERROR Login failed"),
+                "sample.log",
+            ),
+            "keyword": "login",
+            "levels": "ERROR",
+        },
+        content_type="multipart/form-data",
+    )
 
+    assert response.status_code == 200
+    assert len(test_history) == 1
+    assert test_history[0]["source"] == "sample.log"
+
+def test_filtered_history_table_displays_source(monkeypatch):
+    client = app.test_client()
+
+    test_history = [
+        {
+            "keyword": "login",
+            "levels": "ERROR",
+            "source": "sample.log",
+            "matches": 3,            
+            "searched_at": "2026-08-20 10:00:00",
+            "results": [],
+        },
+    ]
+
+    monkeypatch.setattr(app_module, "history", test_history)
+
+    response = client.get("/filter-history")
+
+    assert response.status_code == 200
+    assert b"sample.log" in response.data
+        
+def test_history_table_displays_unknown_source(monkeypatch):
+    client = app.test_client()
+
+    test_history = [
+        {
+            "keyword": "login",
+            "levels": "ERROR",            
+            "matches": 3,            
+            "searched_at": "2026-08-20 10:00:00",
+            "results": [],
+        },
+    ]
+
+    monkeypatch.setattr(app_module, "history", test_history)
+
+    response = client.get("/filter-history")
+
+    assert response.status_code == 200
+    assert b"Unknown" in response.data
+
+def test_download_filtered_history_csv_includes_source(monkeypatch):
+    client = app.test_client()
+
+    test_history = [
+        {
+            "keyword": "login",
+            "source": "sample.log",
+            "levels": "ERROR",            
+            "matches": 3,            
+            "searched_at": "2026-08-20 10:00:00",
+            "results": [],
+        },
+    ]
+
+    monkeypatch.setattr(app_module, "history", test_history)
+
+    response = client.get("/download-history-csv")
+
+    assert response.status_code == 200
+    assert b"Keyword,Source,Levels,Matches,Searched At" in response.data
+    assert b"login,sample.log,ERROR,3" in response.data
+
+def test_download_history_excel_includes_source(monkeypatch):
+    client = app.test_client()
+
+    test_history = [
+        {
+            "keyword": "login",
+            "source": "sample.log",
+            "levels": "ERROR",            
+            "matches": 3,            
+            "searched_at": "2026-08-20 10:00:00",
+            "results": [],
+        },
+    ]
+
+    monkeypatch.setattr(app_module, "history", test_history)
+
+    response = client.get("/download-history-excel")
+
+    assert response.status_code == 200
+
+    workbook = load_workbook(BytesIO(response.data))
+    sheet = workbook["History"]
+
+    assert sheet.cell(row=1, column=6).value == "Source"
+    assert sheet.cell(row=2, column=6).value == "sample.log"
+    
+def test_download_filtered_history_excel_includes_source(monkeypatch):
+    client = app.test_client()
+
+    test_history = [
+        {
+            "keyword": "login",
+            "source": "sample.log",
+            "levels": "ERROR",            
+            "matches": 3,            
+            "searched_at": "2026-08-20 10:00:00",
+            "results": [],
+        },
+    ]
+
+    monkeypatch.setattr(app_module, "history", test_history)
+
+    response = client.get("/download-filtered-history-excel")
+
+    assert response.status_code == 200
+
+    workbook = load_workbook(BytesIO(response.data))
+    sheet = workbook["Filtered History"]
+
+    assert sheet.cell(row=1, column=5).value == "Source"
+    assert sheet.cell(row=2, column=5).value == "sample.log"
+
+def test_export_history_pdf_with_history_details(monkeypatch):
+    client = app.test_client()
+
+    test_history = [
+        {
+            "keyword": "login",
+            "source": "sample.log",
+            "levels": "ERROR",            
+            "matches": 3,            
+            "searched_at": "2026-08-20 10:00:00",
+            "results": [],
+        },
+    ]
+
+    monkeypatch.setattr(app_module, "history", test_history)
+
+    response = client.get("/export-history-pdf")
+
+    assert response.status_code == 200
+    assert response.mimetype == "application/pdf"
+    assert response.data.startswith(b"%PDF")
+
+def test_export_history_pdf_missing_source(monkeypatch):
+    client = app.test_client()
+
+    test_history = [
+        {
+            "keyword": "login",            
+            "levels": "ERROR",            
+            "matches": 3,            
+            "searched_at": "2026-08-20 10:00:00",
+            "results": [],
+        },
+    ]
+
+    monkeypatch.setattr(app_module, "history", test_history)
+
+    response = client.get("/export-history-pdf")
+
+    assert response.status_code == 200
+    assert response.mimetype == "application/pdf"
+    assert response.data.startswith(b"%PDF")
+
+def test_export_history_pdf_filtered_with_source(monkeypatch):
+    client = app.test_client()
+
+    test_history = [
+        {
+            "keyword": "login",
+            "source": "sample.log",
+            "levels": "ERROR",            
+            "matches": 3,            
+            "searched_at": "2026-08-20 10:00:00",
+            "results": [],
+        },
+        {
+            "keyword": "payment",
+            "source": "apache.log",
+            "levels": "WARNING",            
+            "matches": 2,            
+            "searched_at": "2026-08-21 11:00:00",
+            "results": [],
+        },
+    ]
+
+    monkeypatch.setattr(app_module, "history", test_history)
+
+    response = client.get(
+        "/export-history-pdf?"
+        "history_search=login&"
+        "history_level=ERROR"
+    )
+
+    assert response.status_code == 200
+    assert response.mimetype == "application/pdf"
+    assert response.data.startswith(b"%PDF")
 
 
 

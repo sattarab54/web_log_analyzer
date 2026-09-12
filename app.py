@@ -351,7 +351,8 @@ def index():
         
         history.append({
             "keyword": keyword.strip() or "Not set",
-            "levels": ", ".join(selected_levels),       
+            "levels": ", ".join(selected_levels),
+            "source": source_name,
             "matches": len(results),
             "searched_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "results": results,
@@ -1137,11 +1138,12 @@ def download_history_csv():
     text_stream = StringIO()
     writer = csv.writer(text_stream)
 
-    writer.writerow(["Keword", "Levels", "Matches", "Searched At"])
+    writer.writerow(["Keyword", "Source", "Levels", "Matches", "Searched At"])
     for item in export_history:
         writer.writerow(
             [
                 item.get("keyword", ""),
+                item.get("source", "Unknown"),
                 item.get("levels", ""),
                 item.get("matches", 0),
                 item.get("searched_at", ""),
@@ -1441,7 +1443,7 @@ def download_history_excel():
     sheet.title = "History"
     sheet.freeze_panes = "A2"
 
-    sheet.append(["Keyword", "Levels", "Matches", "Searched At", "Results"])
+    sheet.append(["Keyword", "Levels", "Matches", "Searched At", "Results", "Source"])
     for cell in sheet[1]:
         cell.font = Font(bold=True)
 
@@ -1458,10 +1460,12 @@ def download_history_excel():
             item.get("levels", ""),
             item.get("matches", ""),
             item.get("searched_at", ""),
-            "\n".join(clean_export_results(item.get("results", [])))
+            "\n".join(clean_export_results(item.get("results", []))),
+            item.get("source", "Unknown"),
         ])
     
         sheet.column_dimensions["E"].width = 60
+        sheet.column_dimensions["F"].width = 25
 
         for cell in sheet["E"]:
             cell.alignment = Alignment(wrap_text=True, vertical="top")
@@ -1767,14 +1771,15 @@ def download_filtered_history_excel():
     sheet = workbook.active
     sheet.title = "Filtered History"
 
-    sheet.append(["Keyword", "Levels", "Matches", "Searched At"])
+    sheet.append(["Keyword", "Levels", "Matches", "Searched At", "Source"])
 
     for item in display_history:
         sheet.append([
             item.get("keyword", ""),
             item.get("levels", ""),
             item.get("matches", ""),
-            item.get("searched_at", "")
+            item.get("searched_at", ""),
+            item.get("source", "Unknown")
         ])
 
     for column in sheet.columns:
@@ -1789,6 +1794,7 @@ def download_filtered_history_excel():
     sheet.column_dimensions["B"].width = 45
     sheet.column_dimensions["C"].width = 12
     sheet.column_dimensions["D"].width = 25
+    sheet.column_dimensions["E"].width = 25
 
     for cell in sheet[1]:
         cell.font =Font(bold=True)
@@ -2400,7 +2406,40 @@ def export_history_pdf():
             Paragraph("Matches by Date Chart", styles["Heading2"]),
             matches_date_chart_drawing,
         ]),
+    ]    
+
+    history_data = [
+        ["Keyword", "Source", "Levels", "Matches", "Searched At"]
     ]
+
+    for item in display_history:
+        history_data.append([
+            item.get("keyword", "Not set"),
+            item.get("source", "Unknown"),
+            item.get("levels", "All/None"),
+            item.get("matches", 0),
+            item.get("searched_at", ""),
+        ])
+
+    history_table = Table(
+        history_data,
+        colWidths=[90, 100, 100, 60, 170],
+    )
+
+    history_table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.darkblue),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+        ("GRID", (0, 0), (-1, -1), 1, colors.grey),
+        ("BACKGROUND", (0, 1), (-1, -1), colors.beige),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+    ]))
+        
+    elements.extend([
+        Spacer(1, 18),
+        Paragraph("History Details", styles["Heading2"]),
+        history_table,
+    ])
 
     doc.build(elements)
 
