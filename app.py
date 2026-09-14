@@ -692,11 +692,12 @@ def filter_history():
     global latest_filtered_history
     last_search_time = "N/A"
     history_search = request.args.get("history_search", "")
+    history_source = request.args.get("history_source", "").strip()
     history_sort = request.args.get("history_sort", "newest")
     history_from = request.args.get("history_from", "")
     history_to = request.args.get("history_to", "")
     history_level =request.args.get("history_level", "")
-
+    
     display_history = history
 
     if history_search:
@@ -705,6 +706,14 @@ def filter_history():
             item
             for item in history
             if search in item.get("keyword", "").lower()                                                          
+        ]
+
+    if history_source:
+        source_search = history_source.lower()
+        display_history = [
+            item
+            for item in display_history
+            if source_search in item.get("source", "Unknown").lower()
         ]
 
     if history_level:
@@ -985,6 +994,7 @@ def filter_history():
         per_page=per_page,                        
         history_sort=history_sort,        
         history_search=history_search,
+        history_source=history_source,
         history_from=history_from,
         history_to=history_to,
         history_level=history_level,

@@ -3617,6 +3617,38 @@ def test_export_history_pdf_filtered_with_source(monkeypatch):
     assert response.mimetype == "application/pdf"
     assert response.data.startswith(b"%PDF")
 
+def test_filter_history_by_source(monkeypatch):
+    client = app.test_client()
+
+    test_history = [
+        {
+            "keyword": "login",
+            "source": "sample.log",
+            "levels": "ERROR",            
+            "matches": 3,            
+            "searched_at": "2026-08-20 10:00:00",
+            "results": [],
+        },
+        {
+            "keyword": "payment",
+            "source": "apache.log",
+            "levels": "WARNING",            
+            "matches": 2,            
+            "searched_at": "2026-08-21 11:00:00",
+            "results": [],
+        },
+    ]
+
+    monkeypatch.setattr(app_module, "history", test_history)
+
+    response = client.get(
+        "/filter-history?history_source=sample.log"        
+    )
+
+    assert response.status_code == 200
+    assert b"sample.log" in response.data
+    assert b"apache.log" not in response.data
+    
 
 
 

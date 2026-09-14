@@ -241,6 +241,16 @@
                placeholder="Search history"
                value="{{ history_search }}">
 
+    <div style="margin: 8px 0;">
+    <label for="history_source">Source:</label>
+    <input type="text"
+           id="history_source"
+           name="history_source"
+           placeholder="Source file"
+           value="{{ history_source }}"
+           style="width: 180px;">
+    </div>
+    
     <label>From:</label>
         <input type "date" name="history_from" value="{{ history_from }}">
 
