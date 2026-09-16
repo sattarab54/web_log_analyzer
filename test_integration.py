@@ -3649,6 +3649,48 @@ def test_filter_history_by_source(monkeypatch):
     assert b"sample.log" in response.data
     assert b"apache.log" not in response.data
     
+def test_filter_history_combined_filters(monkeypatch):
+    client = app.test_client()
+
+    base_entry = {        
+        "source": "sample.log",
+        "levels": "ERROR",            
+        "matches": 3,            
+        "searched_at": "2026-08-20 10:00:00",
+        "results": [],
+    }
+
+    test_history = [
+        {**base_entry, "keyword": "login_keep"},
+        {
+            **base_entry,
+            "keyword": "login_other_source",
+            "source": "apache.log",
+        },
+        {
+            **base_entry,
+            "keyword": "login_other_level",
+            "levels": "WARNING",
+        },
+        {**base_entry, "keyword": "payment_other_keyword"},        
+    ]
+
+    monkeypatch.setattr(app_module, "history", test_history)
+
+    response = client.get(
+        "/filter-history",
+        query_string={
+            "history_search": "login",
+            "history_source": "sample.log",
+            "history_level": "ERROR",
+        },
+    )
+
+    assert response.status_code == 200
+    assert b"login_keep" in response.data
+    assert b"login_other_source" not in response.data
+    assert b"login_other_level" not in response.data
+    assert b"payment_other_keyword" not in response.data
 
 
 
