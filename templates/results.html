@@ -360,7 +360,7 @@
     <h2>Analysis History</h2>
     
     {% if display_history %}
-    <form method="Get" action="/filter-history">
+    <form id="history-sort" method="get" action="/filter-history#history-sort">
         <label>Sort history: </label>
         <select name="history_sort">
             <option value="newest" {% if history_sort == "newest" %}selected{% endif %}>Newest first</option>
@@ -395,8 +395,9 @@
                 Keyword (Z-A)
             </option>
         </select>
-
+        
         <input type="hidden" name="history_search" value="{{ history_search }}">
+        <input type="hidden" name="history_source" value="{{ history_source }}">
         <input type="hidden" name="history_from" value="{{ history_from }}">
         <input type="hidden" name="history_to" value="{{ history_to }}">
         <input type="hidden" name="history_level" value="{{ history_level }}">
@@ -410,6 +411,7 @@
         'download_history_csv',
         history_sort=history_sort,
         history_search=history_search,
+        history_source=history_source,
         history_from=history_from,
         history_to=history_to,
         history_level=history_level

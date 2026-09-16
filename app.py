@@ -1063,6 +1063,7 @@ def download_history_csv():
     history_from = request.args.get("history_from", "").strip()
     history_to = request.args.get("history_to", "").strip()
     history_level = request.args.get("history_level", "").strip()
+    history_source = request.args.get("history_source", "").strip().lower()
         
     export_history = list(history)
 
@@ -1071,6 +1072,12 @@ def download_history_csv():
             item
             for item in export_history
             if history_search in item .get("keyword", "").lower()
+        ]
+    if history_source:
+        export_history = [
+            item
+            for item in export_history
+            if history_source in item.get("source", "Unknown").lower()
         ]
 
     if history_from:

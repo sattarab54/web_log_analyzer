@@ -3692,6 +3692,56 @@ def test_filter_history_combined_filters(monkeypatch):
     assert b"login_other_level" not in response.data
     assert b"payment_other_keyword" not in response.data
 
+def test_history_csv_filters_by_source(monkeypatch):
+    client = app.test_client()
+
+    base_entry = {                
+        "levels": "ERROR",            
+        "matches": 1,            
+        "searched_at": "2026-09-16 10:00:00",
+        "results": [],
+    }
+
+    test_history = [        
+        {
+            **base_entry,
+            "keyword": "keep_source_marker",
+            "source": "sample.log",
+        },
+        {
+            **base_entry,
+            "keyword": "exclude_source_marker",
+            "source": "apache.log",
+        },                
+    ]
+
+    monkeypatch.setattr(app_module, "history", test_history)
+
+    response = client.get(
+        "/download-history-csv",
+        query_string={"history_source": "SAMPLE.LOG"},                                            
+    )
+
+    assert response.status_code == 200
+    assert b"keep_source_marker" in response.data
+    assert b"exclude_source_marker" not in response.data
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
