@@ -1697,6 +1697,7 @@ def download_filtered_history_excel():
     history_from = request.args.get("history_from", "")
     history_to = request.args.get("history_to", "")
     history_level = request.args.get("history_level", "")
+    history_source = request.args.get("history_source", "").strip().lower()
 
     display_history = list(history)
 
@@ -1708,6 +1709,13 @@ def download_filtered_history_excel():
                 history_search.lower() in item.get("keyword", "").lower()
                 or history_search.lower() in item.get("levels", "").lower()
             )
+        ]
+
+    if history_source:
+        display_history = [
+            item
+            for item in display_history
+            if history_source in item.get("source", "Unknown").lower()
         ]
                                                                                                                         
     if history_from:

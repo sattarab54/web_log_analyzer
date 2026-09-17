@@ -3726,6 +3726,49 @@ def test_history_csv_filters_by_source(monkeypatch):
     assert b"keep_source_marker" in response.data
     assert b"exclude_source_marker" not in response.data
     
+def test_history_excel_filters_by_source(monkeypatch):
+    client = app.test_client()
+
+    base_entry = {                
+        "levels": "ERROR",            
+        "matches": 1,            
+        "searched_at": "2026-09-16 10:00:00",
+        "results": [],
+    }
+
+    test_history = [        
+        {
+            **base_entry,
+            "keyword": "keep_excel_marker",
+            "source": "sample.log",
+        },
+        {
+            **base_entry,
+            "keyword": "exclude_excel_marker",
+            "source": "apache.log",
+        },                
+    ]
+
+    monkeypatch.setattr(app_module, "history", test_history)
+
+    response = client.get(
+        "/export-history-xlsx",
+        query_string={"history_source": "SAMPLE.LOG"},                                            
+    )
+
+    assert response.status_code == 200
+
+    workbook = load_workbook(BytesIO(response.data))
+    values = [
+        cell.value
+        for sheet in workbook.worksheets
+        for row in sheet
+        for cell in row
+    ]
+    workbook.close()
+    
+    assert "keep_excel_marker" in values
+    assert "exclude_excel_marker" not in values
 
 
 

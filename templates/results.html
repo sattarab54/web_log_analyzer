@@ -419,7 +419,15 @@
         <button type="button" class="export-button">Export CSV</button>
     </a>
 
-    <a href="/export-history-xlsx?history_sort={{ history_sort }}&history_search={{ history_search }}&history_from={{ history_from }}&history_to={{ history_to }}&history_level={{ history_level }}">
+    <a href="{{ url_for(
+        'download_filtered_history_excel',
+        history_sort=history_sort,
+        history_search=history_search,
+        history_source=history_source,
+        history_from=history_from,
+        history_to=history_to,
+        history_level=history_level
+    ) }}">    
         <button typee="button" class="excel-button">Export Excel</button>
     </a>
 
