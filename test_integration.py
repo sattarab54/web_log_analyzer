@@ -2,6 +2,7 @@ import app as app_module
 from app import app
 from io import BytesIO
 from openpyxl import load_workbook
+from pypdf import PdfReader
 
 def test_standard_log_submission():
     client = app.test_client()
@@ -3769,6 +3770,48 @@ def test_history_excel_filters_by_source(monkeypatch):
     
     assert "keep_excel_marker" in values
     assert "exclude_excel_marker" not in values
+
+def test_history_pdf_filters_by_source(monkeypatch):
+    client = app.test_client()
+
+    base_entry = {                
+        "levels": "ERROR",            
+        "matches": 1,            
+        "searched_at": "2026-09-16 10:00:00",
+        "results": [],
+    }
+
+    test_history = [        
+        {
+            **base_entry,
+            "keyword": "keep_pdf_marker",
+            "source": "sample.log",
+        },
+        {
+            **base_entry,
+            "keyword": "exclude_pdf_marker",
+            "source": "apache.log",
+        },                
+    ]
+
+    monkeypatch.setattr(app_module, "history", test_history)
+
+    response = client.get(
+        "/export-history-pdf",
+        query_string={"history_source": "SAMPLE.LOG"},                                            
+    )
+
+    assert response.status_code == 200
+    assert response.mimetype == "application/pdf"
+
+    reader = PdfReader(BytesIO(response.data))
+    text = "\n".join(
+        page.extract_text() or ""
+        for page in reader.pages
+    )
+        
+    assert "keep_pdf_marker" in text
+    assert "exclude_pdf_marker" not in text
 
 
 

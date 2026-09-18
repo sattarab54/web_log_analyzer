@@ -430,8 +430,16 @@
     ) }}">    
         <button typee="button" class="excel-button">Export Excel</button>
     </a>
-
-    <a href="/export-history-pdf?history_sort={{ history_sort }}&history_search={{ history_search }}&history_from={{ history_from }}&history_to={{ history_to }}&history_level={{ history_level }}">
+    
+    <a href="{{ url_for(
+        'export_history_pdf',
+        history_sort=history_sort,
+        history_search=history_search,
+        history_source=history_source,
+        history_from=history_from,
+        history_to=history_to,
+        history_level=history_level
+    ) }}">
         <button type="button" class="pdf-button">Download PDF</button>
     </a>
 
