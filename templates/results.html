@@ -459,26 +459,62 @@
         <tr>
             <th>#</th>
             <th class="{% if history_sort in ['keyword_asc', 'keyword_desc'] %}active-sort{% endif %}">                                    
-                <a href="/filter-history?history_sort={% if history_sort == 'keyword_asc' %}keyword_desc{% else %}keyword_asc{% endif %}&history_search={{ history_search }}&history_from={{ history_from }}&history_to={{ history_to }}&history_level={{ history_level }}">
-                    Keyword{% if history_sort == "keyword_asc" %}▲{% elif history_sort == "keyword_desc" %}▼{% endif %}                                                                                    
+                <a href="{{ url_for(
+                'filter_history',
+                history_sort='keyword_desc' if history_sort == 'keyword_asc' else 'keyword_asc',
+                history_search=history_search,
+                history_source=history_source,
+                history_from=history_from,
+                history_to=history_to,
+                history_level=history_level,
+                _anchor='history-sort'
+            ) }}">
+                Keyword{% if history_sort == "keyword_asc" %}▲{% elif history_sort == "keyword_desc" %}▼{% endif %}
                 </a>
             </th>
             <th>Source</th>            
             <th class="{% if history_sort in ['levels_high', 'levels_low'] %}active-sort{% endif %}">
-                <a href="/filter-history?history_sort={% if history_sort == 'levels_high' %}levels_low{% else %}levels_high{% endif %}&history_search={{ history_search }}&history_from={{ history_from }}&history_to={{ history_to }}&history_level={{ history_level }}">
-                    Levels{% if history_sort == "levels_high" %}▼{% elif history_sort == "levels_low" %}▲{% endif %}
+                <a href="{{ url_for(
+                'filter_history',
+                history_sort='levels_low' if history_sort == 'levels_high'  else 'levels_high',
+                history_search=history_search,
+                history_source=history_source,
+                history_from=history_from,
+                history_to=history_to,
+                history_level=history_level,
+                _anchor='history-sort'
+            ) }}">
+                Levels{% if history_sort == "levels_high" %}▼{% elif history_sort == "levels_low" %}▲{% endif %}
                 </a>
-            </th>                                  
+            </th>
             <th class="{% if history_sort in ['matches_high', 'matches_low'] %}active-sort{% endif %}">
-                <a href="/filter-history?history_sort={% if history_sort == 'matches_high' %}matches_low{% else %}matches_high{% endif %}&history_seach={{ history_search }}&history_from={{ history_from }}&history_to={{ history_to }}&history_level={{ history_level }}">
-                    Matches{% if history_sort == "matches_high" %}▼{% elif history_sort == "matches_low" %}▲{% endif %}
+                <a href="{{ url_for(
+                'filter_history',
+                history_sort='matches_low' if history_sort == 'matches_high' else 'matches_high',
+                history_seach=history_search,
+                history_source=history_source,
+                history_from=history_from,
+                history_to=history_to,
+                history_level=history_level,
+                _anchor='history-sort'
+            ) }}">
+                Matches{% if history_sort == "matches_high" %}▼{% elif history_sort == "matches_low" %}▲{% endif %}
                 </a>
             </th>
             <th class="{% if history_sort in ['newest', 'oldest'] %}active-sort{% endif %}">
-                <a href="/filter-history?history_sort={% if history_sort == 'newest' %}oldest{% else %}newest{% endif %}&history_search={{ history_search }}&history_from={{ history_from }}&history_to={{ history_to }}&history_level={{ history_level }}">
-                    Searched At{% if history_sort == "newest" %}▼{% elif history_sort == "oldest" %}▲{% endif %}
+                <a href="{{ url_for(
+                'filter_history',
+                history_sort='oldest' if history_sort == 'newest' else 'newest',
+                history_search=history_search,
+                history_source=history_source,
+                history_from=history_from,
+                history_to=history_to,
+                history_level=history_level,
+                _anchor='history-sort'
+            ) }}">
+                Searched At{% if history_sort == "newest" %}▼{% elif history_sort == "oldest" %}▲{% endif %}
                 </a>
-            </th>                                             
+            </th>
             <th>Action</th>
         </tr>
 
@@ -511,7 +547,17 @@
     <div style="margin-top:20px;">
 
         {% if page > 1 %}
-            <a href="/filter-history?page={{ page - 1 }}&history_sort={{ history_sort }}&history_search={{ history_search }}&history_from={{ history_from }}&history_to={{ history_to }}&history_level={{ history_level }}">
+            <a href="{{ url_for(
+                'filter_history',
+                page=page - 1,
+                history_sort=history_sort,
+                history_search=history_search,
+                history_source=history_source,
+                history_from=history_from,
+                history_to=history_to,
+                history_level=history_level,
+                _anchor='history-sort'
+            ) }}">
                 &laquo; Previous 
             </a>
         {% endif %}
@@ -524,15 +570,34 @@
             {% if page_num == page %}
                 <span class="current-page">{{ page_num }}</span>                                                                                                                                                       
             {% else %}
-                <a href="/filter-history?page={{ page_num }}&history_sort={{ history_sort }}&history_search={{ history_search }}&history_from={{ history_from }}&history_to={{ history_to }}&history_level={{ history_level }}"
-                   style="margin:0 5px;">
+                <a href="{{ url_for(
+                    'filter_history',
+                    page=page_num,
+                    history_sort=history_sort,
+                    history_search=history_search,
+                    history_source=history_source,
+                    history_from=history_from,
+                    history_to=history_to,
+                    history_level=history_level,
+                    _anchor='history-sort'
+                ) }}" style="margin:0 5px;">
                     {{ page_num }}
                 </a>
             {% endif %}
         {% endfor %}                                             
                 
         {% if page < total_pages %}
-            <a href="/filter-history?page={{ page + 1 }}&history_sort={{ history_sort }}&history_search={{ history_search }}&history_from={{ history_from }}&history_to={{ history_to }}&history_level={{ history_level }}">
+            <a href="{{ url_for(
+                'filter_history',
+                page=page + 1,
+                history_sort=history_sort,
+                history_search=history_search,
+                history_source=history_source,
+                history_from=history_from,
+                history_to=history_to,
+                history_level=history_level,
+                _anchor='history-sort'
+            ) }}">
                 Next &raquo;
             </a>
         {% endif %}

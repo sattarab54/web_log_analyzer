@@ -3813,6 +3813,66 @@ def test_history_pdf_filters_by_source(monkeypatch):
     assert "keep_pdf_marker" in text
     assert "exclude_pdf_marker" not in text
 
+def test_history_pagination_preserves_source(monkeypatch):
+    from html.parser import HTMLParser
+    from urllib.parse import parse_qs, urlsplit
+
+    class LinkParser(HTMLParser):
+        def __init__(self):
+            super().__init__()
+            self.links = []
+
+        def handle_starttag(self, tag, attrs):
+            if tag == "a":
+                href = dict(attrs).get("href")
+                if href:
+                    self.links.append(href)
+
+    test_history = [
+        {
+            "keyword": f"login_{i:02d}",
+            "source": "sample.log",
+            "levels": "ERROR",
+            "matches": 1,
+            "searched_at": "2026-09-19 10:00:00",
+            "results": [],
+        }
+        for i in range(21)
+    ]
+
+    monkeypatch.setattr(app_module, "history", test_history)
+
+    client = app.test_client()
+    response = client.get(
+        "/filter-history",
+        query_string={
+            "history_source": "sample.log",
+            "history_sort": "newest",
+            "page": 2,
+        }
+    )
+
+    assert response.status_code == 200
+
+    parser = LinkParser()
+    parser.feed(response.get_data(as_text=True))
+
+    pagination_links = []
+    for href in parser.links:
+        parts = urlsplit(href)
+        query = parse_qs(parts.query)
+        if parts.path == "/filter-history" and "page" in query:
+            pagination_links.append((parts, query))
+
+    assert len(pagination_links) == 4
+    assert {
+        query["page"][0] for _, query in pagination_links
+    } == {"1", "3"}
+
+    for parts, query in pagination_links:
+        assert query["history_source"] == ["sample.log"]
+        assert query["history_sort"] == ["newest"]
+        assert parts.fragment == "history-sort"
 
 
 
