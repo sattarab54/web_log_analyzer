@@ -3650,8 +3650,8 @@ def test_filter_history_by_source(monkeypatch):
     )
 
     assert response.status_code == 200
-    assert b"sample.log" in response.data
-    assert b"apache.log" not in response.data
+    assert b"<td>sample.log</td>" in response.data
+    assert b"<td>apache.log</td>" not in response.data
     
 def test_filter_history_combined_filters(monkeypatch):
     client = app.test_client()
@@ -3928,7 +3928,50 @@ def test_history_empty_with_invalid_pages(monkeypatch):
         assert "Previous" not in page
         assert "Next &raquo;" not in page
 
+def test_history_source_suggestions_are_unique_and_sorted(monkeypatch):
+    test_history = [
+        {
+            "keyword": "first",
+            "source": "zeta.log",
+            "levels": "INFO",
+            "matches": 1,
+            "searched_at": "2026-09-01 10:00:00",
+            "results": [],
+        },
+        {
+            "keyword": "second",
+            "source": "alpha.log",
+            "levels": "ERROR",
+            "matches": 2,
+            "searched_at": "2026-09-02 10:00:00",
+            "results": [],
+        },
+        {
+            "keyword": "third",
+            "source": "zeta.log",
+            "levels": "WARNING",
+            "matches": 3,
+            "searched_at": "2026-09-03 10:00:00",
+            "results": [],
+        },
+    ]
 
+    monkeypatch.setattr(app_module, "history", test_history)
+
+    client = app.test_client()
+    response = client.get("/filter-history")
+
+    assert response.status_code == 200
+
+    page = response.get_data(as_text=True)
+
+    assert 'list="history-source-options"' in page
+    assert '<datalist id="history-source-options">' in page
+    assert page.count('<option value="zeta.log">') == 1
+    assert '<option value="alpha.log">' in page
+    assert page.index('<option value="alpha.log">') < page.index(
+        '<option value="zeta.log">'
+    )
 
 
 

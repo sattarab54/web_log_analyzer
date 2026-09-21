@@ -242,13 +242,20 @@
                value="{{ history_search }}">
 
     <div style="margin: 8px 0;">
-    <label for="history_source">Source:</label>
-    <input type="text"
-           id="history_source"
-           name="history_source"
-           placeholder="Source file"
-           value="{{ history_source }}"
-           style="width: 180px;">
+        <label for="history_source">Source:</label>
+        <input type="text"
+            id="history_source"
+            name="history_source"
+            list="history-source-options"
+            placeholder="Source file"
+            value="{{ history_source }}"
+            style="width: 180px;">
+
+        <datalist id="history-source-options">
+            {% for source_option in history_source_options %}
+                <option value="{{ source_option }}">
+            {% endfor %}
+        </datalist>
     </div>
     
     <label>From:</label>

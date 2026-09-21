@@ -976,6 +976,15 @@ def filter_history():
             if level in item_levels:
                 visible_level_counts[level] +=1
 
+    history_source_options = sorted(
+        {
+            str(item.get("source", "")).strip()
+            for item in history
+            if str(item.get("source", "")).strip()
+        },
+        key=str.lower,
+    )
+
     return render_template(
         "results.html",
         keyword="",
@@ -1000,6 +1009,7 @@ def filter_history():
         history_sort=history_sort,        
         history_search=history_search,
         history_source=history_source,
+        history_source_options=history_source_options,
         history_from=history_from,
         history_to=history_to,
         history_level=history_level,
