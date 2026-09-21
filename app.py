@@ -871,10 +871,15 @@ def filter_history():
     visible_first_search = min(search_times) if search_times else "N/A"
     visible_last_search = max(search_times) if search_times else "N/A"
                                              
-    page = int(request.args.get("page", 1))
-    per_page = 10
+    try:
+        page = int(request.args.get("page", 1))
+    except (TypeError, ValueError):
+        page = 1
 
+    per_page = 10
     total_pages = (len(display_history) + per_page - 1) // per_page
+
+    page = max(1, min(page, max(1, total_pages)))
 
     start = (page - 1) * per_page
     end = start + per_page

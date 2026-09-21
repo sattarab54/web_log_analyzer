@@ -516,8 +516,11 @@ def test_history_pagination_out_of_range(monkeypatch):
 
     page =  response.data.decode()   
 
-    assert "<td>item11</td>" not in page
-    assert "<td>item12</td>" not in page
+    assert "<td>item11</td>" in page
+    assert "<td>item12</td>" in page
+    assert "<td>item1</td>" not in page
+    assert "<td>item10</td>" not in page
+    assert "Page 2 of 2" in page
 
 def test_download_results_csv():
     client = app.test_client()
@@ -3874,9 +3877,56 @@ def test_history_pagination_preserves_source(monkeypatch):
         assert query["history_sort"] == ["newest"]
         assert parts.fragment == "history-sort"
 
+def test_history_invalid_pages_use_first_page(monkeypatch):
+    test_history = [
+        {
+            "keyword": f"item{i}",
+            "source": "sample.log",
+            "levels": "INFO",
+            "matches": i,
+            "searched_at": f"2026-08-{i:02d} 10:00:00",
+            "results": [],
+        }
+        for i in range(1, 13)
+    ]
+    monkeypatch.setattr(app_module, "history", test_history)
+    client = app.test_client()
 
+    for invalid_page in ("abc", "", "0", "-1"):
+        response = client.get(
+            "/filter-history",
+            query_string={
+                "history_sort": "oldest",
+                "page": invalid_page,
+            },
+        )
 
+        assert response.status_code == 200
+        page = response.get_data(as_text=True)
 
+        assert "Page 1 of 2" in page
+        assert "<td>item1</td>" in page
+        assert "<td>item10</td>" in page
+        assert "<td>item11</td>" not in page
+        assert "<td>item12</td>" not in page
+
+def test_history_empty_with_invalid_pages(monkeypatch):
+    monkeypatch.setattr(app_module, "history", [])
+    client = app.test_client()
+
+    for requested_page in ("abc", "0", "-1", "99"):
+        response = client.get(
+            "/filter-history",
+            query_string={"page": requested_page},
+        )
+
+        assert response.status_code == 200
+        page = response.get_data(as_text=True)
+
+        assert "No history yet." in page
+        assert 'class="current-page"' not in page
+        assert "Previous" not in page
+        assert "Next &raquo;" not in page
 
 
 
