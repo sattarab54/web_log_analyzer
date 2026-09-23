@@ -508,7 +508,15 @@ def index():
                 if level in item_levels:
                     visible_level_counts[level] +=1
 
-                                        
+        history_source_options = sorted(
+            {
+                str(item.get("source", "")).strip()
+                for item in history
+                if str(item.get("source", "")).strip()
+            },
+            key=str.lower,
+        )
+
         return render_template(
             "results.html",
             keyword=keyword,
@@ -529,6 +537,7 @@ def index():
             start_datetime_text=start_datetime_text,
             end_datetime_text=end_datetime_text,
             history=history,
+            history_source_options=history_source_options,
             display_history=display_history[:10],
             page=1,
             total_pages=(len(display_history) +10 - 1) // 10,
