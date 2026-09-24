@@ -508,6 +508,29 @@ def index():
                 if level in item_levels:
                     visible_level_counts[level] +=1
 
+        stats_history = display_history
+
+        visible_total_searches = len(stats_history)
+
+        visible_unique_keywords = len({
+            item.get("keyword", "").strip() or "Not set"
+            for item in stats_history
+        })
+
+        visible_total_matches = sum(
+            item.get("matches", 0)
+            for item in stats_history
+        )
+
+        search_times = [
+            item.get("searched_at", "")
+            for item in stats_history
+            if item.get("searched_at", "")
+        ]
+
+        visible_first_search = min(search_times) if search_times else "N/A"
+        visible_last_search = max(search_times) if search_times else "N?A"
+
         history_source_options = sorted(
             {
                 str(item.get("source", "")).strip()
@@ -538,6 +561,11 @@ def index():
             end_datetime_text=end_datetime_text,
             history=history,
             history_source_options=history_source_options,
+            visible_total_searches=visible_total_searches,
+            visible_unique_keywords=visible_unique_keywords,
+            visible_total_matches=visible_total_matches,
+            visible_first_search=visible_first_search,
+            visible_last_search=visible_last_search,
             display_history=display_history[:10],
             page=1,
             total_pages=(len(display_history) +10 - 1) // 10,
