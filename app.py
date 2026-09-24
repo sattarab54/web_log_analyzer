@@ -481,16 +481,20 @@ def index():
 
         total_searches = len(history)
 
-        chart_labels = []
-        chart_values = []
+        chart_counts = {}
 
         for item in display_history:
             label = item.get("keyword", "").strip()
             if not label:
                 label = "Not set"
 
-            chart_labels.append(label)
-            chart_values.append(item.get("matches", 0))
+            chart_counts[label] = (
+                chart_counts.get(label, 0)
+                + item.get("matches", 0)
+            )
+
+        chart_labels = list(chart_counts.keys())
+        chart_values = list(chart_counts.values())
 
         visible_level_counts = {
             "CRITICAL": 0,
