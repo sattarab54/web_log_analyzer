@@ -351,20 +351,14 @@
 
     <div class="history-level-summary">
         <strong>Visible Levels:</strong>
-        CRITICAL: {{ visible_level_counts.CRITICAL }}
-        |
-        ERROR: {{ visible_level_counts.ERROR }}
-        |
-        WARNING: {{ visible_level_counts.WARNING }}
-        |
-        INFO: {{ visible_level_counts.INFO }}
-        |
-        DEBUG: {{ visible_level_counts.DEBUG }}
-        |
-        TRACE: {{ visible_level_counts.TRACE }}
+        <span class="level-count">CRITICAL: {{ visible_level_counts.CRITICAL }}</span>
+        <span class="level-count">ERROR: {{ visible_level_counts.ERROR }}</span>
+        <span class="level-count">WARNING: {{ visible_level_counts.WARNING }}</span>
+        <span class="level-count">INFO: {{ visible_level_counts.INFO }}</span>
+        <span class="level-count">DEBUG: {{ visible_level_counts.DEBUG }}</span>
+        <span class="level-count">TRACE: {{ visible_level_counts.TRACE }}</span>
     </div>
         
-
     <h2>Analysis History</h2>
     
     {% if display_history %}
