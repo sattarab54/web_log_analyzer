@@ -888,6 +888,41 @@ def test_filtered_history_excel_combined_filters(monkeypatch):
     assert ("login", "WARNING", 2) not in rows
     assert ("payment", "ERROR", 4) not  in rows
     assert ("login", "ERROR", 5) not in rows
+
+def test_filtered_history_excel_no_matching_rows(monkeypatch):
+    client = app.test_client()
+
+    test_history = [
+        {
+            "keyword": "login",
+            "levels": "ERROR",
+            "matches": 3,
+            "searched_at": "2026-08-20 10:00:00",
+            "results": [],
+        }
+    ]
+
+    monkeypatch.setattr(app_module, "history", test_history)
+
+    response = client.get(
+        "/download-filtered-history-excel?history_search=not-found"
+    )
+
+    assert response.status_code == 200
+
+    workbook = load_workbook(BytesIO(response.data))
+    assert "Filtered History" in workbook.sheetnames
+    sheet = workbook["Filtered History"]
+
+    assert sheet.cell(row=1, column=1).value is not None
+
+    data_rows = [
+        row
+        for row in sheet.iter_rows(min_row=2, values_only=True)
+        if any(value is not None for value in row)
+    ]
+
+    assert data_rows == []
     
 def test_filtered_history_excel_sort_newest(monkeypatch):
     client = app.test_client()
