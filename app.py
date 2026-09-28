@@ -1590,6 +1590,8 @@ def download_history_excel():
         
     most_keyword = "N/A"
 
+    summary_sheet.append(["Total searches", len(history)])
+
     if history:
         keyword_counts = {}
 
@@ -1601,8 +1603,6 @@ def download_history_excel():
             keyword_counts[key] = keyword_counts.get(key, 0) + 1
 
         most_keyword = max(keyword_counts, key=keyword_counts.get)
-
-        summary_sheet.append(["Total searches", len(history)])
 
         summary_sheet.append([
             "Successful searches",
