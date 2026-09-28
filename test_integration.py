@@ -698,7 +698,8 @@ def test_download_filtered_history_excel():
     assert response.mimetype == (
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
-    
+    assert "filtered_history.xlsx" in response.headers["Content-Disposition"]
+
 def test_filtered_history_excel_keyword_filter(monkeypatch):
     client = app.test_client()
 
