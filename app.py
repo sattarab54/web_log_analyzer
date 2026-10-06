@@ -1900,6 +1900,9 @@ def download_filtered_history_excel():
             end_color="D9EAD3",
         )
 
+    summary_sheet.append(["From date", history_from or "Not set"])
+    summary_sheet.append(["To date", history_to or "Not set"])
+
     summary_sheet.append(["Total searches", len(display_history)])
 
     summary_sheet.append([
