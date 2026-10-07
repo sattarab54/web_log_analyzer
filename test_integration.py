@@ -786,6 +786,37 @@ def test_filtered_history_excel_summary_includes_date_range(monkeypatch):
     assert summary_values["To date"] == "2026-08-21"
     assert summary_values["Total searches"] == 2
 
+def test_filtered_history_excel_summary_dates_not_set_without_date_filter(
+    monkeypatch,
+):
+    client = app.test_client()
+
+    test_history = [
+        {
+            "keyword": "login",
+            "levels": "ERROR",
+            "matches": 1,
+            "searched_at": "2026-08-20 10:00:00",
+            "results": [],
+        },
+    ]
+    monkeypatch.setattr(app_module, "history", test_history)
+
+    response = client.get("/download-filtered-history-excel")
+
+    assert response.status_code == 200
+
+    workbook = load_workbook(BytesIO(response.data))
+    summary_sheet = workbook["Summary"]
+    summary_values = {
+        summary_sheet.cell(row=row, column=1).value:
+        summary_sheet.cell(row=row, column=2).value
+        for row in range(1, summary_sheet.max_row + 1)
+    }
+
+    assert summary_values["From date"] == "Not set"
+    assert summary_values["To date"] == "Not set"
+
 def test_filtered_history_excel_level_filter(monkeypatch):
     client = app.test_client()
 
